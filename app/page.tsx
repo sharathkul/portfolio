@@ -905,7 +905,9 @@ export default function OperatorInterface() {
                                 Get in Touch
                             </button>
                         </a>
-                        <button className="px-8 py-4 border border-slate-700 hover:border-slate-500 text-white rounded-lg transition-colors">
+                        <button className="px-8 py-4 border border-slate-700 hover:border-slate-500 text-white rounded-lg transition-colors"
+                            onClick={() => window.open("/Resume-Sharath-Kulkarni.pdf", "_blank")}
+                        >
                             View Resume
                         </button>
                     </div>
