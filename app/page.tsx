@@ -461,13 +461,13 @@ const EDUCATION_DATA = [
     {
         title: "Master’s degree",
         subtitle: "[California State University, Fresno]",
-        body: "Foundation in business, analytics and operations.",
+        body: "Advanced work in business, analytics, and operations.",
         icon: GraduationCap
     },
     {
         title: "Bachelor’s degree",
         subtitle: "[Bangalore University]",
-        body: "Foundation in business, analytics and operations.",
+        body: "Built core skills in marketing, finance, and management.",
         icon: GraduationCap
     },
     {
