@@ -189,7 +189,7 @@ const TrajectoryBackground = ({ activeType }: { activeType: string }) => {
             { label: "CLINICAL", x: 0, y: 0, z: 0, angle: 2, speed: 0.003, type: "ops" },
             { label: "DATA", x: 0, y: 0, z: 0, angle: 4, speed: 0.002, type: "ai" },
             { label: "OPS", x: 0, y: 0, z: 0, angle: 1, speed: 0.004, type: "ops" },
-            { label: "AUTOMATION", x: 0, y: 0, z: 0, angle: 1, speed: 0.004, type: "automation" },
+            { label: "AUTOMATION", x: 0, y: 0, z: 0, angle: 6, speed: 0.009, type: "automation" },
             { label: "REVENUE", x: 0, y: 0, z: 0, angle: 3, speed: 0.003, type: "ops" },
             { label: "BRAND", x: 0, y: 0, z: 0, angle: 5, speed: 0.002, type: "brand" },
         ];
@@ -702,7 +702,7 @@ export default function OperatorInterface() {
                             </div>
                         </div>
 
-                        {["CLINICAL", "REVENUE", "DATA", "AI", "OPS"].map((label, i) => (
+                        {["CLINICAL", "REVENUE", "DATA", "AI", "OPS", "AUTOMATION"].map((label, i) => (
                             <motion.div
                                 key={label}
                                 className="absolute flex flex-col items-center gap-2"
