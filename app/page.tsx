@@ -189,7 +189,6 @@ const TrajectoryBackground = ({ activeType }: { activeType: string }) => {
             { label: "CLINICAL", x: 0, y: 0, z: 0, angle: 2, speed: 0.003, type: "ops" },
             { label: "DATA", x: 0, y: 0, z: 0, angle: 4, speed: 0.002, type: "ai" },
             { label: "OPS", x: 0, y: 0, z: 0, angle: 1, speed: 0.004, type: "ops" },
-            { label: "AUTOMATION", x: 0, y: 0, z: 0, angle: 6, speed: 0.009, type: "automation" },
             { label: "REVENUE", x: 0, y: 0, z: 0, angle: 3, speed: 0.003, type: "ops" },
             { label: "BRAND", x: 0, y: 0, z: 0, angle: 5, speed: 0.002, type: "brand" },
         ];
@@ -461,13 +460,13 @@ const EDUCATION_DATA = [
     {
         title: "Master’s degree",
         subtitle: "[California State University, Fresno]",
-        body: "Advanced work in business, analytics, and operations.",
+        body: "Foundation in business, analytics and operations.",
         icon: GraduationCap
     },
     {
         title: "Bachelor’s degree",
         subtitle: "[Bangalore University]",
-        body: "Built core skills in marketing, finance, and management.",
+        body: "Foundation in business, analytics and operations.",
         icon: GraduationCap
     },
     {
@@ -643,7 +642,7 @@ export default function OperatorInterface() {
                         <HoloAvatar />
 
                         <div className="flex items-center gap-3">
-                            <MonoLabel>Operator Profile</MonoLabel>
+                            <MonoLabel>Profile</MonoLabel>
                             {/* LINKEDIN ICON */}
                             <a
                                 href="https://www.linkedin.com/in/sharathkulkarni/"
@@ -663,9 +662,9 @@ export default function OperatorInterface() {
                         </h2>
 
                         <div className="space-y-6 text-base md:text-lg text-slate-400 max-w-lg leading-relaxed mb-12 border-l-2 border-slate-800 pl-6">
-                            <p>I work inside a healthcare organisation & MSO where care delivery, operations and revenue all meet. Most days are spent aligning clinicians, front desk teams, billers and engineers around the same problems.</p>
-                            <p>Over the past few years that has meant shaping an internal platform that follows a patient from first contact to final payment. Referrals, intake, eligibility, scheduling, program workflows, claim status, denials and leadership analytics now share one set of rails, with early voice and text AI layered on top.</p>
-                            <p>This site is a quick tour of that work and a way to show how the same mix of provider side experience, MSO operations and product leadership can help other teams who are trying to build practical AI in healthcare.</p>
+                            <p>I like taking messy, half defined problems and turning them into systems that real teams can run.</p>
+                            <p>Today that means working inside a healthcare group and its management services organization, where care delivery, operations, technology and revenue all meet. Over the past few years I have built an engineering team, shaped an internal platform that tracks a patient from first referral to final payment, and started layering voice and text AI on top of existing workflows.</p>
+                            <p>This site gives a quick overview of that work and how the same approach can translate to other healthcare teams.</p>
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-4">
@@ -702,7 +701,7 @@ export default function OperatorInterface() {
                             </div>
                         </div>
 
-                        {["CLINICAL", "REVENUE", "DATA", "AI", "OPS", "AUTOMATION"].map((label, i) => (
+                        {["CLINICAL", "REVENUE", "DATA", "AI", "OPS"].map((label, i) => (
                             <motion.div
                                 key={label}
                                 className="absolute flex flex-col items-center gap-2"
@@ -905,9 +904,7 @@ export default function OperatorInterface() {
                                 Get in Touch
                             </button>
                         </a>
-                        <button className="px-8 py-4 border border-slate-700 hover:border-slate-500 text-white rounded-lg transition-colors"
-                            onClick={() => window.open("/Resume-Sharath-Kulkarni.pdf", "_blank")}
-                        >
+                        <button className="px-8 py-4 border border-slate-700 hover:border-slate-500 text-white rounded-lg transition-colors">
                             View Resume
                         </button>
                     </div>
@@ -915,9 +912,9 @@ export default function OperatorInterface() {
             </Section>
 
             <footer className="py-8 text-center border-t border-slate-800/50 relative z-10 bg-slate-950">
-                <p className="text-slate-600 text-xs font-mono">
+                {/* <p className="text-slate-600 text-xs font-mono">
                     SYSTEM_ID: 8492-A // STATUS: OPTIMAL
-                </p>
+                </p> */}
             </footer>
         </main>
     );
