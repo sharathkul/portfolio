@@ -1,19 +1,17 @@
-import React from 'react';
-import './globals.css';
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import "./globals.css";
 
-export const metadata = {
-    title: 'Sharath Kulkarni - Operator Interface',
-    description: 'Building applied AI systems for specialty care',
+export const metadata: Metadata = {
+  title: "Sharath Kulkarni — Healthcare product & operations",
+  description:
+    "I build healthcare products and lead the teams that make them work. Product development, operations leadership, and client delivery across US and India teams.",
 };
 
-export default function RootLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
-    return (
-        <html lang="en">
-            <body>{children}</body>
-        </html>
-    );
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
 }
