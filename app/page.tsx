@@ -316,9 +316,6 @@ export default function Home() {
                 hear about it.
               </p>
               <div className="contact-links">
-                <a className="email" href="mailto:sharath.kul@gmail.com">
-                  sharath.kul@gmail.com
-                </a>
                 <a
                   href="https://www.linkedin.com/in/sharathkulkarni/"
                   target="_blank"
