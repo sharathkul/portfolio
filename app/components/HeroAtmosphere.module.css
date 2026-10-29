@@ -1,0 +1,101 @@
+.atmosphere {
+  --hero-lift: 0px;
+  --hero-turn: 0deg;
+  --hero-pointer-x: 0px;
+  --hero-pointer-y: 0px;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.portraitField {
+  position: absolute;
+  left: -1.5vw;
+  top: 50%;
+  width: min(54vw, 760px);
+  transform: translateY(-49%);
+}
+
+.sculpture {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  transform: translate3d(var(--hero-pointer-x), calc(var(--hero-pointer-y) - var(--hero-lift)), 0);
+}
+
+.arch {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: rotate(var(--hero-turn));
+}
+
+.upperTile {
+  transform: translate3d(calc(var(--hero-pointer-x) * -.65), calc(var(--hero-lift) * -.4), 0);
+}
+
+.lowerTile {
+  transform: translate3d(calc(var(--hero-pointer-x) * -.5), calc(var(--hero-lift) * .7), 0);
+}
+
+.nodes {
+  transform: translate3d(calc(var(--hero-pointer-x) * .5), calc(var(--hero-lift) * -.2), 0);
+}
+
+.cornerDetail {
+  position: absolute;
+  right: -34px;
+  top: 13%;
+  width: clamp(84px, 10vw, 150px);
+  height: auto;
+  opacity: .64;
+  transform: translateY(calc(var(--hero-lift) * -.6)) rotate(-24deg);
+}
+
+@media (max-width: 1000px) and (min-width: 761px) {
+  .portraitField {
+    left: -5vw;
+    width: 59vw;
+  }
+}
+
+@media (max-width: 760px) {
+  .portraitField {
+    left: 50%;
+    top: 74px;
+    width: min(116vw, 480px);
+    transform: translateX(-50%);
+  }
+
+  .sculpture {
+    transform: translate3d(0, calc(var(--hero-lift) * -.45), 0);
+  }
+
+  .lowerTile {
+    opacity: .58;
+  }
+
+  .cornerDetail {
+    right: -43px;
+    top: 38%;
+    width: 100px;
+    opacity: .35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sculpture,
+  .arch,
+  .upperTile,
+  .lowerTile,
+  .nodes {
+    transform: none;
+  }
+
+  .cornerDetail {
+    transform: rotate(-24deg);
+  }
+}

@@ -1,7 +1,9 @@
 .map {
-  --journey-ink: var(--ink, #172542);
-  --journey-paper: var(--paper, #f6f8f4);
-  --journey-thread: #3e55ae;
+  --journey-ink: var(--ink, #1c2536);
+  --journey-paper: var(--paper, #f4f2ec);
+  --journey-thread: #3156ce;
+  --journey-slate: #586271;
+  --journey-ice: #dae3f3;
   width: 100%;
   max-width: 1100px;
   color: var(--journey-ink);
@@ -27,18 +29,18 @@
 }
 
 .routeShadow {
-  stroke: #788a90;
+  stroke: var(--journey-slate);
   stroke-width: 18;
-  opacity: 0.16;
+  opacity: 0.12;
 }
 
 .routeDepth {
-  stroke: #d3dcdb;
+  stroke: var(--journey-ice);
   stroke-width: 16;
 }
 
 .routeSurface {
-  stroke: #fffefa;
+  stroke: var(--journey-paper);
   stroke-width: 15;
 }
 
@@ -53,7 +55,7 @@
 }
 
 .branchSurface {
-  stroke: #dfe6e2;
+  stroke: var(--journey-ice);
   stroke-width: 9;
 }
 
@@ -80,30 +82,35 @@
 }
 
 .platformShadow {
-  fill: #a6b5b5;
+  fill: var(--journey-slate);
   opacity: 0.12;
 }
 
 .platformSide {
-  fill: #d2ddd9;
-  stroke: #b9c9c4;
+  fill: var(--journey-ice);
+  stroke: #b9c8e0;
   stroke-width: 0.7;
 }
 
 .platformTop {
   fill: var(--journey-paper);
-  stroke: #bdcbc6;
+  stroke: #b9c8e0;
   stroke-width: 0.8;
 }
 
 .stopPin {
-  fill: #f6f8f4;
+  fill: var(--journey-paper);
   stroke: var(--journey-thread);
   stroke-width: 2;
 }
 
 .selectedStop .stopPin {
   fill: var(--journey-thread);
+}
+
+.selectedStop .platformTop {
+  fill: var(--journey-ice);
+  stroke: var(--journey-thread);
 }
 
 .stopButton {
@@ -165,8 +172,8 @@
 }
 
 .scope span {
+  color: var(--journey-slate);
   font-weight: 400;
-  opacity: 0.75;
 }
 
 .detail {
@@ -202,6 +209,7 @@
 
   .drawing {
     aspect-ratio: 350 / 550;
+    margin-bottom: 28px;
   }
 
   .desktopDrawing {
@@ -223,7 +231,7 @@
     left: var(--mobile-x);
     width: 30%;
     gap: 4px;
-    font-size: 16px;
+    font-size: 17px;
   }
 
   .scope span {

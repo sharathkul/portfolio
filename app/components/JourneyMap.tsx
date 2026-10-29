@@ -15,7 +15,7 @@ type Stop = {
 
 const stops: Stop[] = [
   { label: "BBDO", desktop: { x: 70, y: 200 }, mobile: { x: 82, y: 35 }, labelDesktop: { x: 70, y: 231 }, labelMobile: { x: 82, y: 60 } },
-  { label: "Co-founding", desktop: { x: 235, y: 280 }, mobile: { x: 235, y: 105 }, labelDesktop: { x: 235, y: 311 }, labelMobile: { x: 235, y: 130 } },
+  { label: "Business", desktop: { x: 235, y: 280 }, mobile: { x: 235, y: 105 }, labelDesktop: { x: 235, y: 311 }, labelMobile: { x: 235, y: 130 } },
   { label: "California", desktop: { x: 398, y: 190 }, mobile: { x: 82, y: 175 }, labelDesktop: { x: 398, y: 139 }, labelMobile: { x: 82, y: 200 } },
   { label: "Juniper", desktop: { x: 555, y: 270 }, mobile: { x: 235, y: 245 }, labelDesktop: { x: 555, y: 301 }, labelMobile: { x: 235, y: 270 } },
   { label: "TNG", desktop: { x: 710, y: 180 }, mobile: { x: 82, y: 315 }, labelDesktop: { x: 710, y: 129 }, labelMobile: { x: 82, y: 340 } },
@@ -28,9 +28,9 @@ const paths = {
 };
 
 const scopes = [
-  { title: "People", detail: "Teams and managers", desktop: { x: 765, y: 251 }, mobile: { x: 55, y: 470 } },
-  { title: "Product", detail: "HEMI + engineering", desktop: { x: 905, y: 269 }, mobile: { x: 175, y: 470 } },
-  { title: "Delivery", detail: "Care, RCM, clients", desktop: { x: 1030, y: 245 }, mobile: { x: 295, y: 470 } },
+  { title: "People", detail: "Teams & managers", desktop: { x: 765, y: 251 }, mobile: { x: 55, y: 470 } },
+  { title: "Product", detail: "Engineering & HEMI", desktop: { x: 905, y: 269 }, mobile: { x: 175, y: 470 } },
+  { title: "Delivery", detail: "Care, RCM & clients", desktop: { x: 1030, y: 245 }, mobile: { x: 295, y: 470 } },
 ];
 
 function Company({ href, children }: { href: string; children: ReactNode }) {
@@ -40,17 +40,17 @@ function Company({ href, children }: { href: string; children: ReactNode }) {
 function Detail({ selected }: { selected: number }) {
   switch (selected) {
     case 0:
-      return <>I began in brand and campaign work at <Company href="https://bbdo.com/">BBDO</Company>, learning to understand clients and carry work through.</>;
+      return <>Brand Associate at <Company href="https://bbdo.com/">BBDO</Company>, working across brand and campaigns.</>;
     case 1:
-      return <>Co-founding a business put clients, finances, sales, and day-to-day decisions on the same desk.</>;
+      return <>Co-founded a business, with responsibility across clients, sales, finances and operations.</>;
     case 2:
-      return <>I moved to California for my MBA and to explore the technology world.</>;
+      return <>MBA at California State University, Fresno, 2021–2023. A move to California to explore technology and business.</>;
     case 3:
-      return <>During my MBA, a marketing operations internship at <Company href="https://www.juniper.net/us/en.html">Juniper</Company> brought me into stakeholder research and an internal marketing portal.</>;
+      return <>Marketing Operations Intern at <Company href="https://www.juniper.net/us/en.html">Juniper</Company>. Stakeholder research and Jira analysis informed an internal marketing portal redesign.</>;
     case 4:
-      return <>I joined <Company href="https://www.thenephrologygroupinc.com/">The Nephrology Group</Company> in 2023 in business intelligence and analytics, then learned the practice and its workflows from the inside.</>;
+      return <>Business Intelligence &amp; Analytics Manager at <Company href="https://www.thenephrologygroupinc.com/">The Nephrology Group</Company> since 2023, with work spanning reporting, analytics and healthcare operations.</>;
     default:
-      return <>Today I lead <Company href="https://ncaremd.com/">nCare’s</Company> day-to-day operations below the CEO, connecting teams, product development, care and RCM programs, and client delivery.</>;
+      return <>Operations leadership at <Company href="https://ncaremd.com/">nCare</Company> across care programs, revenue cycle, engineering, product development and client delivery.</>;
   }
 }
 
@@ -128,8 +128,8 @@ export default function JourneyMap({ reducedMotion = true }: Props) {
   }, [reducedMotion, traced]);
 
   return (
-    <div ref={host} className={styles.map} data-traced={traced} data-reduced-motion={reducedMotion}>
-      <div className={styles.drawing} role="group" aria-label="Career journey. Select a stop to read the short version.">
+    <div ref={host} className={styles.map} data-journey-map data-traced={traced} data-reduced-motion={reducedMotion}>
+      <div className={styles.drawing} role="group" aria-label="Career overview. Select a stop to see the role and context.">
         <Drawing mobile={false} selected={selected} id={`${id}-desktop-shadow`} />
         <Drawing mobile selected={selected} id={`${id}-mobile-shadow`} />
         {stops.map((stop, index) => (

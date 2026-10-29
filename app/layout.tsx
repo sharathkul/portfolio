@@ -29,7 +29,7 @@ const plex = localFont({
 export const metadata: Metadata = {
   title: "Sharath Kulkarni",
   description:
-    "Inside Sharath Kulkarni’s work leading nCare’s operations, building teams, and helping bring healthcare technology into daily use.",
+    "Sharath Kulkarni’s work in healthcare AI, automation and operations, connecting product development, engineering and client delivery at nCare.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -1,0 +1,184 @@
+.scene {
+  --thread: #3156ce;
+  --ink: #1c2536;
+  --slate: #586271;
+  --ice: #dae3f3;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.viewport {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  opacity: 0;
+}
+
+.routeShadow,
+.routeBase,
+.route,
+.localThread,
+.manualThread,
+.jointBranches path,
+.deliveryBase,
+.deliveryThread {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.routeShadow {
+  stroke: var(--ink);
+  stroke-width: 9;
+  opacity: 0.045;
+  transform: translateY(4px);
+}
+
+.routeBase {
+  stroke: var(--thread);
+  stroke-width: 3;
+  opacity: 0.13;
+}
+
+.route {
+  stroke: var(--thread);
+  stroke-width: 3.4;
+  opacity: 0.82;
+}
+
+.element {
+  opacity: 0;
+}
+
+.paper {
+  stroke: #c3cad4;
+  stroke-width: 1;
+}
+
+.paperEdge,
+.deviceEdge {
+  stroke: #a9b5c8;
+  stroke-width: 0.6;
+}
+
+.tintedPaper {
+  fill: var(--ice);
+  stroke: #b7c5df;
+  stroke-width: 1;
+}
+
+.fold {
+  fill: #e8ded2;
+  stroke: #c7c0b8;
+  stroke-width: 0.8;
+}
+
+.paperMark {
+  stroke: var(--slate);
+  stroke-width: 1.7;
+  opacity: 0.42;
+}
+
+.folderFront {
+  stroke: #3156ce;
+  stroke-width: 0.8;
+}
+
+.folderLip {
+  stroke: #a8baf0;
+  stroke-width: 2;
+}
+
+.deviceFace {
+  stroke: #b6c3d8;
+  stroke-width: 1;
+}
+
+.deviceGlass {
+  fill: var(--ice);
+  fill-opacity: 0.8;
+  stroke: #b4c2db;
+  stroke-width: 0.8;
+}
+
+.deviceStand {
+  stroke: #bdc9dd;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.blueEdge {
+  fill: #29449a;
+  stroke: #8097db;
+  stroke-width: 0.8;
+}
+
+.bluePlate {
+  stroke: #93a9e8;
+  stroke-width: 1;
+}
+
+.codeMark {
+  stroke: #f4f2ec;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.localThread,
+.deliveryThread {
+  stroke: var(--thread);
+  stroke-width: 4.4;
+}
+
+.manualThread {
+  stroke: #8e9aaf;
+  stroke-width: 2;
+  stroke-dasharray: 8 12;
+  opacity: 0.55;
+}
+
+.jointBranches path {
+  stroke: #6f8bdd;
+  stroke-width: 3;
+  stroke-dasharray: 1;
+  stroke-dashoffset: inherit;
+}
+
+.deliveryBase {
+  stroke: #c2cde1;
+  stroke-width: 4;
+}
+
+.deliveryThread {
+  stroke-dasharray: 1;
+}
+
+.label {
+  fill: var(--ink);
+  font-family: var(--font-body), sans-serif;
+  font-size: var(--diagram-label-size, 23px);
+  font-weight: 400;
+  letter-spacing: -0.3px;
+}
+
+@media (max-width: 760px) {
+  .route {
+    stroke-width: 2.6;
+    opacity: 0.65;
+  }
+
+  .routeBase {
+    stroke-width: 2.6;
+    opacity: 0.09;
+  }
+
+  .localThread,
+  .deliveryThread {
+    stroke-width: 3;
+  }
+
+}
