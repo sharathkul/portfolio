@@ -31,8 +31,8 @@ export default function Home() {
               </h1>
               <p className="intro">
                 I lead day-to-day operations at nCare, reporting to the CEO. My
-                work connects product development, teams across the US and
-                India, revenue cycle operations, and care programs.
+                work connects product development, team leadership,
+                revenue cycle operations, and care programs.
               </p>
               <p className="intro">
                 I stay involved from the first workflow conversation through
@@ -70,8 +70,8 @@ export default function Home() {
           </section>
           <div className="scope" aria-label="Current scope of responsibility">
             <p>
-              <strong>About 85 people</strong>Across US and India operations,
-              with leads and managers reporting to me.
+              <strong>About 85 people</strong>With leads and managers reporting
+              to me.
             </p>
             <p>
               <strong>200–250 daily users</strong>Using HEMI, the internal
@@ -148,8 +148,7 @@ export default function Home() {
                 <p className="case-type">Operations leadership</p>
                 <h3>Leading the operation behind the platform</h3>
                 <p className="case-summary">
-                  People, revenue cycle, care programs, and client delivery
-                  across the US and India.
+                  People, revenue cycle, care programs, and client delivery.
                 </p>
               </div>
               <div className="case-body">
@@ -172,7 +171,7 @@ export default function Home() {
                       engineering, and support implementation.
                     </p>
                     <p>
-                      I also helped establish and transition the India operating
+                      I also helped establish and transition an operating
                       team. The product work and the team structure need to
                       support the same operating goals.
                     </p>
