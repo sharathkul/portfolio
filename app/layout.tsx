@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import localFont from "next/font/local";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const hubot = localFont({
@@ -35,7 +36,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body className={`${hubot.variable} ${plex.variable}`}>{children}</body>
+      <body className={`${hubot.variable} ${plex.variable}`}>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
