@@ -1,0 +1,17 @@
+Portfolio visual sources, 2026-10-28
+
+fragmented-work.png and connected-work.png
+Created with OpenAI's built-in image generation tool for this portfolio.
+Purpose: Matching tactile paper landscapes, moving from interrupted paths to connected cobalt bridges, as a visual accompaniment to Sharath's account of learning healthcare workflows and connecting the work.
+Format: 1536 x 1024 transparent PNG.
+These are conceptual illustrations, not screenshots of a healthcare product or claims about patient outcomes.
+Exact generation prompts and tool provenance are preserved in the project output folder: outputs/art-direction/PROMPTS.txt.
+
+profile.jpg
+Existing portrait supplied for Sharath's portfolio. Displayed once, using the original file without a low-resolution derivative or blur filter.
+
+Design research references
+Lusion: https://lusion.co/
+Jesper Landberg: https://jesperlandberg.com/
+Arthur Engel: https://aengel.io/
+Their spatial transitions, pacing, and generous composition informed the direction. No media or source code was copied from these sites.

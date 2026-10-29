@@ -1,0 +1,247 @@
+.map {
+  --journey-ink: var(--ink, #172542);
+  --journey-paper: var(--paper, #f6f8f4);
+  --journey-thread: #3e55ae;
+  width: 100%;
+  max-width: 1100px;
+  color: var(--journey-ink);
+}
+
+.drawing {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1100 / 390;
+}
+
+.desktopDrawing,
+.mobileDrawing {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.mobileDrawing {
+  display: none;
+}
+
+.routeShadow {
+  stroke: #788a90;
+  stroke-width: 18;
+  opacity: 0.16;
+}
+
+.routeDepth {
+  stroke: #d3dcdb;
+  stroke-width: 16;
+}
+
+.routeSurface {
+  stroke: #fffefa;
+  stroke-width: 15;
+}
+
+.routeSurface,
+.routeDepth,
+.routeShadow,
+.branchSurface,
+.thread,
+.branchThread {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.branchSurface {
+  stroke: #dfe6e2;
+  stroke-width: 9;
+}
+
+.thread,
+.branchThread {
+  stroke: var(--journey-thread);
+  stroke-width: 3.2;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.branchThread {
+  stroke-width: 2;
+  opacity: 0.6;
+  transition-delay: 950ms;
+}
+
+.map[data-traced="true"] .thread,
+.map[data-traced="true"] .branchThread,
+.map[data-reduced-motion="true"] .thread,
+.map[data-reduced-motion="true"] .branchThread {
+  stroke-dashoffset: 0;
+}
+
+.platformShadow {
+  fill: #a6b5b5;
+  opacity: 0.12;
+}
+
+.platformSide {
+  fill: #d2ddd9;
+  stroke: #b9c9c4;
+  stroke-width: 0.7;
+}
+
+.platformTop {
+  fill: var(--journey-paper);
+  stroke: #bdcbc6;
+  stroke-width: 0.8;
+}
+
+.stopPin {
+  fill: #f6f8f4;
+  stroke: var(--journey-thread);
+  stroke-width: 2;
+}
+
+.selectedStop .stopPin {
+  fill: var(--journey-thread);
+}
+
+.stopButton {
+  position: absolute;
+  top: var(--desktop-y);
+  left: var(--desktop-x);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  min-height: 44px;
+  padding: 0 7px;
+  transform: translate(-50%, -50%);
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-body), sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.stopButton[aria-pressed="true"] {
+  border-bottom-color: var(--journey-thread);
+  color: var(--journey-thread);
+}
+
+.stopButton:hover {
+  color: var(--journey-thread);
+}
+
+.stopButton:focus-visible,
+.detail a:focus-visible {
+  outline: 2px solid var(--journey-thread);
+  outline-offset: 4px;
+}
+
+.scope {
+  position: absolute;
+  top: var(--desktop-y);
+  left: var(--desktop-x);
+  display: flex;
+  width: 140px;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.scope strong {
+  font-weight: 500;
+}
+
+.scope span {
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+.detail {
+  display: block;
+  min-height: 88px;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 10px 24px;
+  color: var(--journey-ink);
+  font-size: 18px;
+  line-height: 1.55;
+  text-align: center;
+  text-wrap: pretty;
+}
+
+.detail a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--journey-thread);
+  text-underline-offset: 4px;
+}
+
+.map[data-reduced-motion="true"] .thread,
+.map[data-reduced-motion="true"] .branchThread {
+  transition: none;
+}
+
+@media (max-width: 760px) {
+  .map {
+    max-width: 350px;
+    margin-inline: auto;
+  }
+
+  .drawing {
+    aspect-ratio: 350 / 550;
+  }
+
+  .desktopDrawing {
+    display: none;
+  }
+
+  .mobileDrawing {
+    display: block;
+  }
+
+  .stopButton {
+    top: var(--mobile-y);
+    left: var(--mobile-x);
+    font-size: 17px;
+  }
+
+  .scope {
+    top: var(--mobile-y);
+    left: var(--mobile-x);
+    width: 30%;
+    gap: 4px;
+    font-size: 16px;
+  }
+
+  .scope span {
+    max-width: 105px;
+  }
+
+  .detail {
+    min-height: 100px;
+    padding: 10px 6px;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thread,
+  .branchThread {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+}
