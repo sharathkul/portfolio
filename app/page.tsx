@@ -7,8 +7,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import JourneyMap from "./components/JourneyMap";
 import ConnectedStory from "./components/ConnectedStory";
 import HeroProfile from "./components/HeroProfile";
+import ContactForm from "./components/ContactForm";
 
-const linkedIn = "https://www.linkedin.com/in/sharathkulkarni/";
 const chapters = [
   { id: "start", label: "Profile" },
   { id: "operations", label: "Healthcare AI" },
@@ -54,7 +54,12 @@ export default function Home() {
         scrollTrigger: { trigger: "#story", start: "top top", end: "bottom bottom", scrub: true },
       });
     }, root);
-    return () => context.revert();
+    const resize = new ResizeObserver(() => ScrollTrigger.refresh());
+    if (root.current) resize.observe(root.current);
+    return () => {
+      resize.disconnect();
+      context.revert();
+    };
   }, []);
 
   return (
@@ -62,7 +67,7 @@ export default function Home() {
       <a className="skip-link" href="#operations">Skip to my work</a>
       <header className="story-header">
         <a className="signature" href="#start">Sharath Kulkarni</a>
-        <a className="header-contact" href={linkedIn} target="_blank" rel="noopener noreferrer">LinkedIn <ArrowUpRight size={17} aria-hidden="true" /></a>
+        <a className="header-contact" href="#contact">Get in touch</a>
         <button type="button" className="motion-control" aria-pressed={!reducedMotion}
           aria-label="Motion"
           title={reducedMotion ? "Turn motion on" : "Pause motion"}
@@ -109,10 +114,7 @@ export default function Home() {
             <p>A background across brand, business and technology, now focused on healthcare product and operations.</p>
           </div>
           <JourneyMap reducedMotion={reducedMotion} />
-          <div className="conversation-close">
-            <p>For conversations about healthcare AI, automation and the operations behind them.</p>
-            <a href={linkedIn} target="_blank" rel="noopener noreferrer">Connect on LinkedIn <ArrowUpRight size={22} aria-hidden="true" /></a>
-          </div>
+          <ContactForm />
         </section>
       </main>
       <nav className="chapter-navigation" aria-label="Explore my current work">
