@@ -55,14 +55,14 @@
   transform: translateY(calc(var(--hero-lift) * -.6)) rotate(-24deg);
 }
 
-@media (max-width: 1000px) and (min-width: 761px) {
+@media (max-width: 1000px) and (min-width: 961px) {
   .portraitField {
     left: -5vw;
     width: 59vw;
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 960px) {
   .atmosphere {
     bottom: auto;
     height: calc(clamp(84px, 12svh, 88px) + env(safe-area-inset-top, 0px) + min(64vw, clamp(150px, calc(50svh - 170px), 270px)) + 8px);

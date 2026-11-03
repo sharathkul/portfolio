@@ -23,7 +23,7 @@
   z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
-  gap: clamp(36px, 6vw, 90px);
+  gap: clamp(42px, 7vw, 104px);
   align-items: center;
   width: min(100%, 1280px);
 }
@@ -34,6 +34,28 @@
   width: min(100%, 470px);
   aspect-ratio: 1;
   justify-self: center;
+}
+
+.hero .portraitScene {
+  z-index: 0;
+  inset: -15% auto auto -15%;
+  width: 130%;
+  height: 120%;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 84%, transparent 100%);
+}
+
+.hero [data-hero-atmosphere],
+.backdrop,
+.foundation {
+  transition: opacity 200ms ease;
+}
+
+.hero:has(.composition[data-sculpture-ready="true"]) [data-hero-atmosphere],
+.composition[data-sculpture-ready="true"] .backdrop,
+.composition[data-sculpture-ready="true"] .foundation {
+  opacity: 0;
 }
 
 .backdrop {
@@ -129,19 +151,26 @@
 .explore svg { transition: transform .25s ease; }
 .explore:hover svg { transform: translateY(3px); }
 
-@media (min-width: 761px) and (max-height: 700px) {
+@media (min-width: 961px) and (max-height: 700px) {
   .hero { padding-top: 110px; padding-bottom: 100px; }
   .hero .composition { width: min(100%, 380px); }
   .hero .name { font-size: clamp(52px, 5.5vw, 70px); }
   .hero .bio { font-size: 19px; margin-top: 22px; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 960px) {
   .hero {
     padding: calc(clamp(84px, 12svh, 88px) + env(safe-area-inset-top, 0px)) max(25px, env(safe-area-inset-right, 0px)) calc(clamp(72px, 10svh, 80px) + env(safe-area-inset-bottom, 0px)) max(25px, env(safe-area-inset-left, 0px));
   }
   .hero .overview { grid-template-columns: minmax(0, 1fr); gap: clamp(16px, calc(3svh - 3px), 22px); max-width: 560px; }
   .hero .composition { width: min(64vw, clamp(150px, calc(50svh - 170px), 270px)); }
+  .hero .portraitScene {
+    inset: -15% auto auto -15%;
+    width: 130%;
+    height: 120%;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 80%, transparent 96%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 80%, transparent 96%);
+  }
   .hero .copy { text-align: center; }
   .hero .name { font-size: clamp(32px, 8.8vw, 44px); line-height: 1.1; letter-spacing: -.04em; }
   .name span { display: inline; }
@@ -150,6 +179,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hero [data-hero-atmosphere],
+  .backdrop,
+  .foundation { transition: none; }
   .explore svg { transition: none; }
   .explore:hover svg { transform: none; }
 }

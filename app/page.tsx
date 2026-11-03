@@ -3,10 +3,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowUpRight, Plus, Pause, Play } from "lucide-react";
 import JourneyMap from "./components/JourneyMap";
-import ConnectedStory from "./components/ConnectedStory";
-import MobileStoryArt from "./components/MobileStoryArt";
-import MobileStoryThread from "./components/MobileStoryThread";
-import MobileSceneMotion from "./components/MobileSceneMotion";
+import StoryArt from "./components/StoryArt";
+import StoryThread from "./components/StoryThread";
+import SceneMotion from "./components/SceneMotion";
 import HeroProfile from "./components/HeroProfile";
 
 const linkedIn = "https://www.linkedin.com/in/sharathkulkarni/";
@@ -113,15 +112,12 @@ export default function Home() {
           {reducedMotion ? <Play size={18} aria-hidden="true" /> : <Pause size={18} aria-hidden="true" />}
         </button>
       </header>
-      <div className="kinetic-stage" aria-hidden="true">
-        <ConnectedStory active={active} reducedMotion={reducedMotion} />
-      </div>
       <main id="story">
-        <MobileSceneMotion reducedMotion={reducedMotion} />
-        <MobileStoryThread reducedMotion={reducedMotion} />
+        <SceneMotion reducedMotion={reducedMotion} />
+        <StoryThread reducedMotion={reducedMotion} />
         <HeroProfile reducedMotion={reducedMotion} />
         <section className="story-part story-right" id="operations" aria-labelledby="operations-title">
-          <MobileStoryArt chapter="operations" />
+          <StoryArt chapter="operations" />
           <div className="scene-copy">
             <h2 id="operations-title">Healthcare AI and automation.</h2>
             <p>Spreadsheets, printouts and manual handoffs fill the gaps between disconnected healthcare systems.</p>
@@ -130,7 +126,7 @@ export default function Home() {
           </div>
         </section>
         <section className="story-part story-left" id="building" aria-labelledby="building-title">
-          <MobileStoryArt chapter="building" />
+          <StoryArt chapter="building" />
           <div className="scene-copy">
             <h2 id="building-title">An operation with a product team inside it.</h2>
             <p>At nCare, I set priorities across the operation and built the engineering team developing HEMI, our internal platform.</p>
@@ -142,7 +138,7 @@ export default function Home() {
           </div>
         </section>
         <section className="story-part story-right clients-part" id="clients" aria-labelledby="clients-title">
-          <MobileStoryArt chapter="clients" />
+          <StoryArt chapter="clients" />
           <div className="scene-copy">
             <h2 id="clients-title">It has to work after the demo.</h2>
             <p>I’ve led nCare’s MSO and revenue cycle service implementations for four external client organizations, from setup and training to ongoing account management.</p>

@@ -3,10 +3,10 @@
 import { useId, useState } from "react";
 import { Devices, Engineering, Folder, Paper, type StoryPalette } from "./StoryShapes";
 import styles from "./ConnectedStory.module.css";
-import motion from "./MobileStoryArt.module.css";
-import MobileSculpture from "./MobileSculpture";
+import motion from "./StoryArt.module.css";
+import StorySculpture from "./StorySculpture";
 
-export default function MobileStoryArt({ chapter }: { chapter: "operations" | "building" | "clients" }) {
+export default function StoryArt({ chapter }: { chapter: "operations" | "building" | "clients" }) {
   const id = `art-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const [sculptureReady, setSculptureReady] = useState(false);
   const palette: StoryPalette = {
@@ -16,8 +16,8 @@ export default function MobileStoryArt({ chapter }: { chapter: "operations" | "b
   };
 
   return (
-    <div className={`mobile-story-art ${motion.scene}`} data-story-art data-scene={chapter} data-sculpture-ready={sculptureReady} aria-hidden="true">
-      <MobileSculpture chapter={chapter} onReady={setSculptureReady} />
+    <div className={`story-art ${motion.scene}`} data-story-art data-scene={chapter} data-sculpture-ready={sculptureReady} aria-hidden="true">
+      <StorySculpture chapter={chapter} onReady={setSculptureReady} />
       <svg viewBox="-255 -180 510 360" fill="none" focusable="false">
         <defs>
           <linearGradient id={`${id}-paper`} x1="-60" y1="-70" x2="65" y2="80" gradientUnits="userSpaceOnUse">

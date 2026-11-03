@@ -205,7 +205,7 @@
   transition: none;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 960px) {
   .map {
     max-width: 350px;
     margin-inline: auto;

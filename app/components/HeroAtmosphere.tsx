@@ -24,7 +24,7 @@ export default function HeroAtmosphere({ reducedMotion }: Props) {
     reset();
     if (reducedMotion) return;
 
-    const desktop = window.matchMedia("(min-width: 761px) and (hover: hover) and (pointer: fine)");
+    const desktop = window.matchMedia("(min-width: 961px) and (hover: hover) and (pointer: fine)");
     let stopMotion = () => {};
 
     const startMotion = () => {

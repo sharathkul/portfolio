@@ -13,6 +13,7 @@
 }
 
 .scene > svg { transition: opacity 180ms ease; }
+.scene > svg { transform: perspective(1000px) rotateY(calc(var(--scene-pointer-x, 0) * 8deg)) rotateX(calc(var(--scene-pointer-y, 0) * -6deg)); }
 .scene[data-sculpture-ready="true"] > svg { opacity: 0; }
 
 .sculpture {
@@ -25,7 +26,7 @@
   transition: opacity 180ms ease;
 }
 
-.scene[data-sculpture-ready="true"] .sculpture { opacity: 1; }
+.sculpture[data-ready="true"] { opacity: 1; }
 
 .sculptureLabels {
   position: absolute;
@@ -34,12 +35,16 @@
   justify-content: space-around;
   gap: 8px;
   color: var(--ink);
-  font-size: 15px;
+  font-size: 18px;
   line-height: 1.3;
   opacity: 0;
 }
 
 .scene[data-sculpture-ready="true"] .sculptureLabels { opacity: 1; }
+
+@media (max-width: 960px) {
+  .sculptureLabels { font-size: 15px; }
+}
 
 .paperLeft,
 .paperRight,

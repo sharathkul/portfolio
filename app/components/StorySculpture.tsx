@@ -1,24 +1,24 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import styles from "./MobileStoryArt.module.css";
+import styles from "./StoryArt.module.css";
 
-type Chapter = "operations" | "building" | "clients";
+type Chapter = "hero" | "operations" | "building" | "clients";
+type Interaction = { x: number; y: number };
 type Sculpture = {
   resize: (width: number, height: number) => void;
-  update: (progress: number, reducedMotion: boolean) => void;
+  update: (progress: number, reducedMotion: boolean, interaction?: Interaction) => void;
   dispose: () => void;
 };
-type ProgressEvent = CustomEvent<{ progress: number; reducedMotion: boolean }>;
+type ProgressEvent = CustomEvent<{ progress: number; reducedMotion: boolean; interaction?: Interaction }>;
 
-export default function MobileSculpture({ chapter, onReady }: { chapter: Chapter; onReady: (ready: boolean) => void }) {
+export default function StorySculpture({ chapter, onReady, className = "" }: { chapter: Chapter; onReady: (ready: boolean) => void; className?: string }) {
   const canvas = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const surface = canvas.current;
-    const slot = surface?.closest<HTMLElement>("[data-story-art]");
+    const slot = surface?.closest<HTMLElement>("[data-scene]");
     if (!surface || !slot) return;
-    const media = window.matchMedia("(max-width: 760px)");
     let sculpture: Sculpture | undefined;
     let disposed = false;
     let loading = false;
@@ -27,34 +27,37 @@ export default function MobileSculpture({ chapter, onReady }: { chapter: Chapter
     let visible = false;
     let width = 0;
     let height = 0;
-    let progress = Number(slot.style.getPropertyValue("--scene-progress") || 1);
+    let progress = Number(slot.style.getPropertyValue("--scene-progress") || (chapter === "hero" ? 0 : 1));
+    let interaction = { x: 0, y: 0 };
     let reducedMotion = !!slot.closest(".motion-reduced");
 
     const fallback = () => {
       sculpture?.dispose();
       sculpture = undefined;
       ready = false;
+      surface.dataset.ready = "false";
       onReady(false);
       slot.dataset.sculptureStatus = "fallback";
     };
     const paint = () => {
-      if (!sculpture || !visible || !media.matches || document.hidden || contextLost) return;
+      if (!sculpture || !visible || document.hidden || contextLost) return;
       try {
-        sculpture.update(progress, reducedMotion);
+        sculpture.update(progress, reducedMotion, interaction);
         if (!ready) {
           ready = true;
+          surface.dataset.ready = "true";
           slot.dataset.sculptureStatus = "ready";
           onReady(true);
         }
       } catch { fallback(); }
     };
     const load = async () => {
-      if (disposed || sculpture || loading || contextLost || !visible || !media.matches || !width || !height) return;
+      if (disposed || sculpture || loading || contextLost || !visible || !width || !height) return;
       loading = true;
       try {
-        const { createMobileSculpture } = await import("./createMobileSculpture");
-        if (disposed || !visible || !media.matches) return;
-        sculpture = createMobileSculpture(surface, chapter);
+        const { createStorySculpture } = await import("./createStorySculpture");
+        if (disposed || !visible) return;
+        sculpture = createStorySculpture(surface, chapter);
         sculpture.resize(width, height);
         paint();
       } catch {
@@ -68,6 +71,7 @@ export default function MobileSculpture({ chapter, onReady }: { chapter: Chapter
       const detail = (event as ProgressEvent).detail;
       progress = detail.progress;
       reducedMotion = detail.reducedMotion;
+      interaction = detail.interaction ?? { x: 0, y: 0 };
       paint();
     };
     const intersection = new IntersectionObserver(([entry]) => {
@@ -85,15 +89,6 @@ export default function MobileSculpture({ chapter, onReady }: { chapter: Chapter
         paint();
       } else void load();
     });
-    const mode = () => {
-      if (media.matches) void load();
-      else {
-        sculpture?.dispose();
-        sculpture = undefined;
-        ready = false;
-        onReady(false);
-      }
-    };
     const lost = (event: Event) => {
       event.preventDefault();
       contextLost = true;
@@ -107,9 +102,8 @@ export default function MobileSculpture({ chapter, onReady }: { chapter: Chapter
     surface.addEventListener("webglcontextlost", lost);
     surface.addEventListener("webglcontextrestored", restored);
     document.addEventListener("visibilitychange", paint);
-    media.addEventListener("change", mode);
     intersection.observe(slot);
-    resize.observe(slot);
+    resize.observe(surface);
 
     return () => {
       disposed = true;
@@ -119,10 +113,9 @@ export default function MobileSculpture({ chapter, onReady }: { chapter: Chapter
       surface.removeEventListener("webglcontextlost", lost);
       surface.removeEventListener("webglcontextrestored", restored);
       document.removeEventListener("visibilitychange", paint);
-      media.removeEventListener("change", mode);
       sculpture?.dispose();
     };
   }, [chapter, onReady]);
 
-  return <canvas ref={canvas} className={styles.sculpture} data-scene-canvas aria-hidden="true" />;
+  return <canvas ref={canvas} className={`${styles.sculpture} ${className}`} data-scene-canvas data-ready="false" aria-hidden="true" />;
 }
