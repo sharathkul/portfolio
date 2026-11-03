@@ -159,9 +159,16 @@ export default function JourneyMap({ reducedMotion = true }: Props) {
           </div>
         ))}
       </div>
-      <p id={detailId} className={styles.detail} aria-live="polite">
-        <Detail selected={selected} />
-      </p>
+      <div className={styles.detailArea}>
+        <div className={styles.detailSizer} aria-hidden="true" inert>
+          {stops.map((stop, index) => (
+            <p key={stop.label} className={styles.detail}><Detail selected={index} /></p>
+          ))}
+        </div>
+        <p id={detailId} className={styles.detail} aria-live="polite">
+          <Detail selected={selected} />
+        </p>
+      </div>
     </div>
   );
 }

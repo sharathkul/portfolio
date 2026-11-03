@@ -14,7 +14,7 @@ export default function HeroProfile({ reducedMotion }: { reducedMotion: boolean 
           <div className={styles.backdrop} aria-hidden="true" />
           <div className={styles.foundation} aria-hidden="true" />
           <div className={`${styles.portrait} intro-portrait`}>
-            <Image src="/visuals/sharath-cartoon.png" alt="Cartoon portrait of Sharath Kulkarni" fill preload unoptimized sizes="(max-width: 760px) 70vw, (max-width: 1100px) 40vw, 470px" />
+            <Image src="/visuals/sharath-cartoon.png" alt="Cartoon portrait of Sharath Kulkarni" fill preload sizes="(max-width: 760px) 64vw, (max-width: 1100px) 40vw, 470px" />
           </div>
           <span className={styles.connector} data-connector-origin aria-hidden="true" />
         </div>

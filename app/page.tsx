@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowUpRight, Plus, Pause, Play } from "lucide-react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import JourneyMap from "./components/JourneyMap";
 import ConnectedStory from "./components/ConnectedStory";
+import MobileStoryArt from "./components/MobileStoryArt";
+import MobileStoryThread from "./components/MobileStoryThread";
 import HeroProfile from "./components/HeroProfile";
 
 const linkedIn = "https://www.linkedin.com/in/sharathkulkarni/";
@@ -21,7 +21,7 @@ function Company({ href, children }: { href: string; children: ReactNode }) {
   return <a className="company-link" href={href} target="_blank" rel="noopener noreferrer">{children}<ArrowUpRight size={16} aria-hidden="true" /></a>;
 }
 function More({ children, label }: { children: ReactNode; label: string }) {
-  return <details className="story-detail" onToggle={() => ScrollTrigger.refresh()}><summary>{label}<Plus size={19} aria-hidden="true" /></summary><div>{children}</div></details>;
+  return <details className="story-detail"><summary>{label}<Plus size={19} aria-hidden="true" /></summary><div>{children}</div></details>;
 }
 
 export default function Home() {
@@ -40,21 +40,63 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-    const context = gsap.context(() => {
-      chapters.forEach((chapter, index) => {
-        ScrollTrigger.create({
-          trigger: `#${chapter.id}`, start: "top 55%", end: "bottom 55%",
-          onEnter: () => setActive(index), onEnterBack: () => setActive(index),
-          onRefresh: (self) => { if (self.isActive) setActive(index); },
-        });
-      });
-      gsap.to(".reading-progress", {
-        scaleX: 1, ease: "none",
-        scrollTrigger: { trigger: "#story", start: "top top", end: "bottom bottom", scrub: true },
-      });
-    }, root);
-    return () => context.revert();
+    const shell = root.current;
+    if (!shell) return;
+    const sections = chapters.map(chapter => document.getElementById(chapter.id));
+    const progress = shell.querySelector<HTMLElement>(".reading-progress");
+    let frame = 0;
+    let measureFrame = 0;
+    let disposed = false;
+    let positions: number[] = [];
+    let pageHeight = 1;
+    let layoutWidth = window.innerWidth;
+
+    const render = () => {
+      frame = 0;
+      if (disposed || document.hidden) return;
+      const marker = window.scrollY + window.innerHeight * .55;
+      let next = 0;
+      positions.forEach((top, index) => { if (marker >= top) next = index; });
+      setActive(previous => previous === next ? previous : next);
+      const amount = Math.min(1, Math.max(0, window.scrollY / Math.max(1, pageHeight - window.innerHeight)));
+      if (progress) progress.style.transform = `scaleX(${amount})`;
+    };
+    const request = () => {
+      if (!frame && !disposed && !document.hidden) frame = requestAnimationFrame(render);
+    };
+    const measure = () => {
+      measureFrame = 0;
+      if (disposed) return;
+      const scroll = window.scrollY;
+      positions = sections.map(section => (section?.getBoundingClientRect().top ?? 0) + scroll);
+      pageHeight = shell.getBoundingClientRect().height;
+      request();
+    };
+    const scheduleMeasure = () => {
+      if (!measureFrame && !disposed) measureFrame = requestAnimationFrame(measure);
+    };
+    const resize = () => {
+      if (window.innerWidth !== layoutWidth) {
+        layoutWidth = window.innerWidth;
+        scheduleMeasure();
+      } else request();
+    };
+    const observer = new ResizeObserver(scheduleMeasure);
+    observer.observe(shell);
+    window.addEventListener("scroll", request, { passive: true });
+    window.addEventListener("resize", resize, { passive: true });
+    document.addEventListener("visibilitychange", request);
+    document.fonts.ready.then(() => { if (!disposed) scheduleMeasure(); });
+    measure();
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(measureFrame);
+      observer.disconnect();
+      window.removeEventListener("scroll", request);
+      window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", request);
+    };
   }, []);
 
   return (
@@ -63,8 +105,8 @@ export default function Home() {
       <header className="story-header">
         <a className="signature" href="#start">Sharath Kulkarni</a>
         <a className="header-contact" href={linkedIn} target="_blank" rel="noopener noreferrer">LinkedIn <ArrowUpRight size={17} aria-hidden="true" /></a>
-        <button type="button" className="motion-control" aria-pressed={!reducedMotion}
-          aria-label="Motion"
+        <button type="button" className="motion-control"
+          aria-label={reducedMotion ? "Turn motion on" : "Pause motion"}
           title={reducedMotion ? "Turn motion on" : "Pause motion"}
           onClick={() => setMotionOverride(!reducedMotion)}>
           {reducedMotion ? <Play size={18} aria-hidden="true" /> : <Pause size={18} aria-hidden="true" />}
@@ -74,8 +116,10 @@ export default function Home() {
         <ConnectedStory active={active} reducedMotion={reducedMotion} />
       </div>
       <main id="story">
+        <MobileStoryThread reducedMotion={reducedMotion} />
         <HeroProfile reducedMotion={reducedMotion} />
         <section className="story-part story-right" id="operations" aria-labelledby="operations-title">
+          <MobileStoryArt chapter="operations" />
           <div className="scene-copy">
             <h2 id="operations-title">Healthcare AI and automation.</h2>
             <p>Spreadsheets, printouts and manual handoffs fill the gaps between disconnected healthcare systems.</p>
@@ -84,6 +128,7 @@ export default function Home() {
           </div>
         </section>
         <section className="story-part story-left" id="building" aria-labelledby="building-title">
+          <MobileStoryArt chapter="building" />
           <div className="scene-copy">
             <h2 id="building-title">An operation with a product team inside it.</h2>
             <p>At nCare, I set priorities across the operation and built the engineering team developing HEMI, our internal platform.</p>
@@ -95,6 +140,7 @@ export default function Home() {
           </div>
         </section>
         <section className="story-part story-right clients-part" id="clients" aria-labelledby="clients-title">
+          <MobileStoryArt chapter="clients" />
           <div className="scene-copy">
             <h2 id="clients-title">It has to work after the demo.</h2>
             <p>I’ve led nCare’s MSO and revenue cycle service implementations for four external client organizations, from setup and training to ongoing account management.</p>

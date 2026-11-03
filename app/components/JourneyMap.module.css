@@ -189,6 +189,10 @@
   text-wrap: pretty;
 }
 
+.detailSizer {
+  display: none;
+}
+
 .detail a {
   color: inherit;
   text-decoration: underline;
@@ -209,7 +213,7 @@
 
   .drawing {
     aspect-ratio: 350 / 550;
-    margin-bottom: 28px;
+    margin-bottom: 38px;
   }
 
   .desktopDrawing {
@@ -230,17 +234,39 @@
     top: var(--mobile-y);
     left: var(--mobile-x);
     width: 30%;
-    gap: 4px;
-    font-size: 17px;
+    gap: 6px;
+    font-size: 16px;
+    line-height: 1.35;
   }
 
   .scope span {
     max-width: 105px;
+    font-size: 14px;
+    line-height: 1.4;
+    text-wrap: balance;
+  }
+
+  .detailArea {
+    display: grid;
+  }
+
+  .detailArea > .detail,
+  .detailSizer,
+  .detailSizer > .detail {
+    grid-area: 1 / 1;
+  }
+
+  .detailSizer {
+    display: grid;
+    visibility: hidden;
+    pointer-events: none;
+    user-select: none;
   }
 
   .detail {
-    min-height: 100px;
-    padding: 10px 6px;
+    width: 100%;
+    min-height: 0;
+    padding: 10px 0;
     font-size: 16px;
     line-height: 1.5;
   }

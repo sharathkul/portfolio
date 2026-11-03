@@ -14,9 +14,6 @@ export default function HeroAtmosphere({ reducedMotion }: Props) {
     const hero = backdrop?.closest("section");
     if (!backdrop || !hero) return;
 
-    let frame = 0;
-    let pointerX = 0;
-    let pointerY = 0;
     const reset = () => {
       backdrop.style.setProperty("--hero-lift", "0px");
       backdrop.style.setProperty("--hero-turn", "0deg");
@@ -27,48 +24,87 @@ export default function HeroAtmosphere({ reducedMotion }: Props) {
     reset();
     if (reducedMotion) return;
 
-    const render = () => {
-      frame = 0;
-      if (document.hidden) return;
-      const bounds = hero.getBoundingClientRect();
-      const progress = Math.max(0, Math.min(1, -bounds.top / Math.max(1, bounds.height)));
-      backdrop.style.setProperty("--hero-lift", `${progress * 54}px`);
-      backdrop.style.setProperty("--hero-turn", `${progress * -7}deg`);
-      backdrop.style.setProperty("--hero-pointer-x", `${pointerX * 8}px`);
-      backdrop.style.setProperty("--hero-pointer-y", `${pointerY * 6}px`);
+    const desktop = window.matchMedia("(min-width: 761px) and (hover: hover) and (pointer: fine)");
+    let stopMotion = () => {};
+
+    const startMotion = () => {
+      let frame = 0;
+      let visible = false;
+      let pointerX = 0;
+      let pointerY = 0;
+      const render = () => {
+        frame = 0;
+        if (!visible || document.hidden) return;
+        const bounds = hero.getBoundingClientRect();
+        const progress = Math.max(0, Math.min(1, -bounds.top / Math.max(1, bounds.height)));
+        backdrop.style.setProperty("--hero-lift", `${progress * 54}px`);
+        backdrop.style.setProperty("--hero-turn", `${progress * -7}deg`);
+        backdrop.style.setProperty("--hero-pointer-x", `${pointerX * 8}px`);
+        backdrop.style.setProperty("--hero-pointer-y", `${pointerY * 6}px`);
+      };
+      const request = () => {
+        if (visible && !frame && !document.hidden) frame = window.requestAnimationFrame(render);
+      };
+      const move = (event: PointerEvent) => {
+        if (event.pointerType !== "mouse") return;
+        const bounds = hero.getBoundingClientRect();
+        pointerX = (event.clientX - bounds.left) / bounds.width - 0.5;
+        pointerY = (event.clientY - bounds.top) / bounds.height - 0.5;
+        request();
+      };
+      const leave = () => {
+        pointerX = 0;
+        pointerY = 0;
+        request();
+      };
+      const onVisibility = () => {
+        if (document.hidden) {
+          window.cancelAnimationFrame(frame);
+          frame = 0;
+        } else request();
+      };
+      const resize = new ResizeObserver(request);
+      const setVisible = (next: boolean) => {
+        if (visible === next) return;
+        visible = next;
+        if (visible) {
+          resize.observe(hero);
+          window.addEventListener("scroll", request, { passive: true });
+          hero.addEventListener("pointermove", move, { passive: true });
+          hero.addEventListener("pointerleave", leave);
+          document.addEventListener("visibilitychange", onVisibility);
+          request();
+        } else {
+          resize.disconnect();
+          window.cancelAnimationFrame(frame);
+          frame = 0;
+          pointerX = 0;
+          pointerY = 0;
+          window.removeEventListener("scroll", request);
+          hero.removeEventListener("pointermove", move);
+          hero.removeEventListener("pointerleave", leave);
+          document.removeEventListener("visibilitychange", onVisibility);
+        }
+      };
+      const intersection = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting));
+      intersection.observe(hero);
+      return () => {
+        intersection.disconnect();
+        setVisible(false);
+        resize.disconnect();
+      };
     };
-    const request = () => {
-      if (!frame && !document.hidden) frame = window.requestAnimationFrame(render);
+    const configure = () => {
+      stopMotion();
+      reset();
+      stopMotion = desktop.matches ? startMotion() : () => {};
     };
-    const move = (event: PointerEvent) => {
-      if (event.pointerType !== "mouse") return;
-      const bounds = hero.getBoundingClientRect();
-      pointerX = (event.clientX - bounds.left) / bounds.width - 0.5;
-      pointerY = (event.clientY - bounds.top) / bounds.height - 0.5;
-      request();
-    };
-    const leave = () => {
-      pointerX = 0;
-      pointerY = 0;
-      request();
-    };
-    const observer = new ResizeObserver(request);
-    observer.observe(hero);
-    window.addEventListener("scroll", request, { passive: true });
-    window.addEventListener("resize", request, { passive: true });
-    hero.addEventListener("pointermove", move, { passive: true });
-    hero.addEventListener("pointerleave", leave);
-    document.addEventListener("visibilitychange", request);
-    request();
+    desktop.addEventListener("change", configure);
+    configure();
 
     return () => {
-      window.cancelAnimationFrame(frame);
-      observer.disconnect();
-      window.removeEventListener("scroll", request);
-      window.removeEventListener("resize", request);
-      hero.removeEventListener("pointermove", move);
-      hero.removeEventListener("pointerleave", leave);
-      document.removeEventListener("visibilitychange", request);
+      desktop.removeEventListener("change", configure);
+      stopMotion();
       reset();
     };
   }, [reducedMotion]);

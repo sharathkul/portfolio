@@ -63,15 +63,26 @@
 }
 
 @media (max-width: 760px) {
+  .atmosphere {
+    bottom: auto;
+    height: calc(clamp(84px, 12svh, 88px) + env(safe-area-inset-top, 0px) + min(64vw, clamp(150px, calc(50svh - 170px), 270px)) + 8px);
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent);
+  }
+
   .portraitField {
     left: 50%;
-    top: 74px;
-    width: min(116vw, 480px);
+    top: calc(clamp(30px, calc(30svh - 179px), 74px) + env(safe-area-inset-top, 0px));
+    width: min(116vw, clamp(270px, calc(90svh - 306px), 486px));
     transform: translateX(-50%);
   }
 
-  .sculpture {
-    transform: translate3d(0, calc(var(--hero-lift) * -.45), 0);
+  .sculpture,
+  .arch,
+  .upperTile,
+  .lowerTile,
+  .nodes {
+    transform: none;
   }
 
   .lowerTile {
@@ -83,6 +94,7 @@
     top: 38%;
     width: 100px;
     opacity: .35;
+    transform: rotate(-24deg);
   }
 }
 
