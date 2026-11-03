@@ -68,4 +68,3 @@ export function Engineering({ x, y }: { x: number; y: number }) {
     </g>
   );
 }
-
