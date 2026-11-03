@@ -85,6 +85,12 @@
     transform: none;
   }
 
+  .sculpture { transform: translate3d(0, calc(var(--hero-depth, 0) * -12px), 0); }
+  .arch { transform: rotate(calc(var(--hero-depth, 0) * -5deg)); }
+  .upperTile { transform: translate3d(calc(var(--hero-depth, 0) * 8px), calc(var(--hero-depth, 0) * -4px), 0); }
+  .lowerTile { transform: translate3d(calc(var(--hero-depth, 0) * -6px), calc(var(--hero-depth, 0) * 8px), 0); }
+  .nodes { transform: translate3d(calc(var(--hero-depth, 0) * 4px), calc(var(--hero-depth, 0) * -6px), 0); }
+
   .lowerTile {
     opacity: .58;
   }
@@ -94,7 +100,7 @@
     top: 38%;
     width: 100px;
     opacity: .35;
-    transform: rotate(-24deg);
+    transform: translateY(calc(var(--hero-depth, 0) * -10px)) rotate(calc(-24deg + var(--hero-depth, 0) * 6deg));
   }
 }
 

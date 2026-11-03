@@ -6,6 +6,7 @@ import JourneyMap from "./components/JourneyMap";
 import ConnectedStory from "./components/ConnectedStory";
 import MobileStoryArt from "./components/MobileStoryArt";
 import MobileStoryThread from "./components/MobileStoryThread";
+import MobileSceneMotion from "./components/MobileSceneMotion";
 import HeroProfile from "./components/HeroProfile";
 
 const linkedIn = "https://www.linkedin.com/in/sharathkulkarni/";
@@ -116,6 +117,7 @@ export default function Home() {
         <ConnectedStory active={active} reducedMotion={reducedMotion} />
       </div>
       <main id="story">
+        <MobileSceneMotion reducedMotion={reducedMotion} />
         <MobileStoryThread reducedMotion={reducedMotion} />
         <HeroProfile reducedMotion={reducedMotion} />
         <section className="story-part story-right" id="operations" aria-labelledby="operations-title">

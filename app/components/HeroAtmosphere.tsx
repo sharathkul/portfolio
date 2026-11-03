@@ -110,7 +110,7 @@ export default function HeroAtmosphere({ reducedMotion }: Props) {
   }, [reducedMotion]);
 
   return (
-    <div ref={element} className={styles.atmosphere} aria-hidden="true">
+    <div ref={element} className={styles.atmosphere} data-hero-atmosphere aria-hidden="true">
       <div className={styles.portraitField}>
         <svg className={styles.sculpture} viewBox="0 0 720 760" fill="none" focusable="false">
           <defs>
