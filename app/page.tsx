@@ -119,10 +119,10 @@ export default function Home() {
         <section className="story-part story-right" id="operations" aria-labelledby="operations-title">
           <StoryArt chapter="operations" />
           <div className="scene-copy">
-            <h2 id="operations-title">Healthcare AI and automation.</h2>
-            <p>Spreadsheets, printouts and manual handoffs fill the gaps between disconnected healthcare systems.</p>
-            <p>My focus is where AI and automation can reduce that manual work, give teams better visibility and fit the way care is delivered.</p>
-            <p>At <Company href="https://www.thenephrologygroupinc.com/">The Nephrology Group</Company>, learning those gaps from the people doing the work shaped the reporting, workflows and tools we built.</p>
+            <h2 id="operations-title">Healthcare’s fragmentation has a cost.</h2>
+            <p>Healthcare practices often run on disconnected systems. Clinical, operational and financial data sit in silos, making it hard to see where care, performance and revenue are falling short.</p>
+            <p>Without that visibility, teams spend time piecing information together while missed work, delayed collections and lost revenue go unnoticed.</p>
+            <p>Seeing those gaps firsthand at <Company href="https://www.thenephrologygroupinc.com/">The Nephrology Group</Company> shaped my focus: connect the data, make the problems visible and use AI and automation to help teams act.</p>
           </div>
         </section>
         <section className="story-part story-left" id="building" aria-labelledby="building-title">
