@@ -50,7 +50,7 @@ function Detail({ selected }: { selected: number }) {
     case 4:
       return <>Business Intelligence &amp; Analytics Manager at <Company href="https://www.thenephrologygroupinc.com/">The Nephrology Group</Company> since 2023, with work spanning reporting, analytics and healthcare operations.</>;
     default:
-      return <>Operations leadership at <Company href="https://ncaremd.com/">nCare</Company> across care programs, revenue cycle, engineering, product development and client delivery.</>;
+      return <>I now oversee operations at <Company href="https://ncaremd.com/">nCare</Company>, connecting care delivery, revenue cycle, product development and engineering.</>;
   }
 }
 

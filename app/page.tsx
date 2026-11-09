@@ -8,6 +8,7 @@ import StoryThread from "./components/StoryThread";
 import SceneMotion from "./components/SceneMotion";
 import HeroProfile from "./components/HeroProfile";
 import ContactForm from "./components/ContactForm";
+import BrandAtmosphere from "./components/BrandAtmosphere";
 
 const chapters = [
   { id: "start", label: "Profile" },
@@ -101,6 +102,7 @@ export default function Home() {
 
   return (
     <div ref={root} className={`story-shell${reducedMotion ? " motion-reduced" : ""}`} data-active={active}>
+      <BrandAtmosphere reducedMotion={reducedMotion} />
       <a className="skip-link" href="#operations">Skip to my work</a>
       <header className="story-header">
         <a className="signature" href="#start">Sharath Kulkarni</a>
@@ -122,18 +124,17 @@ export default function Home() {
             <h2 id="operations-title">Healthcare’s fragmentation has a cost.</h2>
             <p>Healthcare practices often run on disconnected systems. Clinical, operational and financial data sit in silos, making it hard to see where care, performance and revenue are falling short.</p>
             <p>Without that visibility, teams spend time piecing information together while missed work, delayed collections and lost revenue go unnoticed.</p>
-            <p>Seeing those gaps firsthand at <Company href="https://www.thenephrologygroupinc.com/">The Nephrology Group</Company> shaped my focus: connect the data, make the problems visible and use AI and automation to help teams act.</p>
+            <p>At <Company href="https://ncaremd.com/">nCare</Company>, I oversee operations across care programs, revenue cycle and client delivery, alongside the team building our internal tools. It’s a close view of where better data, AI and automation can help.</p>
           </div>
         </section>
         <section className="story-part story-left" id="building" aria-labelledby="building-title">
           <StoryArt chapter="building" />
           <div className="scene-copy">
-            <h2 id="building-title">An operation with a product team inside it.</h2>
-            <p>At nCare, I set priorities across the operation and built the engineering team developing HEMI, our internal platform.</p>
-            <p>I work with managers, team leads and engineers on where AI and automation fit, what to build next and how teams adopt it. HEMI is now part of daily operations, with product work across desktop and mobile.</p>
-            <More label="Scope and responsibilities">
-              <p>My formal roles are Product Operations Manager at nCare and Business Intelligence &amp; Analytics Manager at The Nephrology Group. I report to the CEO, with managers and team leads reporting to me.</p>
-              <p>Operating responsibility includes care management, remote patient monitoring, principal care management, revenue cycle and client delivery. Product work includes prioritization, workflow design, engineering coordination, rollout and adoption.</p>
+            <h2 id="building-title">Building from inside the operation.</h2>
+            <p>HEMI is our internal platform for day-to-day work. I built the engineering team behind it and work across the roadmap, workflows and desktop and mobile experiences.</p>
+            <p>Being close to the operation helps us decide what is worth building. I stay involved through implementation and adoption, so product decisions stay connected to how teams use the tools.</p>
+            <More label="Behind the work">
+              <p>I oversee care management, remote patient monitoring, principal care management and revenue cycle operations. That includes coordinating the teams delivering the services and the engineers building the tools behind them.</p>
             </More>
           </div>
         </section>
@@ -141,16 +142,16 @@ export default function Home() {
           <StoryArt chapter="clients" />
           <div className="scene-copy">
             <h2 id="clients-title">It has to work after the demo.</h2>
-            <p>I’ve led nCare’s MSO and revenue cycle service implementations for four external client organizations, from setup and training to ongoing account management.</p>
-            <More label="Demos, brand and communication">
-              <p>I also lead demonstrations and nCare’s brand and website work, keeping how we present the service connected to what our teams deliver.</p>
+            <p>The work continues with the practices using nCare’s services, from demos and implementation through training and ongoing account management. What we build has to hold up for the people delivering it and the clients relying on it.</p>
+            <More label="Delivery and communication">
+              <p>I’ve led MSO and revenue cycle implementations for four external client organizations. I also oversee nCare’s brand and website work, keeping how we present the services connected to what our teams deliver.</p>
             </More>
           </div>
         </section>
         <section className="story-part journey-part" id="journey" aria-labelledby="journey-title">
           <div className="journey-intro">
             <h2 id="journey-title">The experience behind the work.</h2>
-            <p>A background across brand, business and technology, now focused on healthcare product and operations.</p>
+            <p>Earlier work in brand, business and technology still shapes how I approach healthcare, product and operations today.</p>
           </div>
           <JourneyMap reducedMotion={reducedMotion} />
           <ContactForm />

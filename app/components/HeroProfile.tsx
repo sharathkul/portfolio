@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { ArrowDown, ArrowUpRight } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import HeroAtmosphere from "./HeroAtmosphere";
 import StorySculpture from "./StorySculpture";
 import styles from "./HeroProfile.module.css";
@@ -25,7 +25,7 @@ export default function HeroProfile({ reducedMotion }: { reducedMotion: boolean 
         </div>
         <div className={`${styles.copy} introduction-copy`}>
           <h1 className={styles.name} id="intro-title">Sharath <span>Kulkarni.</span></h1>
-          <p className={styles.bio}>At <a className="company-link" href="https://ncaremd.com/" target="_blank" rel="noopener noreferrer">nCare<ArrowUpRight size={16} aria-hidden="true" /></a>, I lead operations and the teams building the tools behind them. My work brings healthcare, product and engineering together, with a focus on AI and automation.</p>
+          <p className={styles.bio}>I work across healthcare, product and engineering. I like understanding how people work, where things get stuck and how better tools, AI and automation can help.</p>
           <a className={styles.explore} href="#operations">Explore my work <ArrowDown size={20} aria-hidden="true" /></a>
         </div>
       </div>

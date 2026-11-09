@@ -1,0 +1,79 @@
+.atmosphere {
+  --brand-pointer-x: 0;
+  --brand-pointer-y: 0;
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: clip;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 3%, transparent 15%, transparent 85%, #000 97%, #000 100%);
+  mask-image: linear-gradient(to right, #000 0%, #000 3%, transparent 15%, transparent 85%, #000 97%, #000 100%);
+}
+
+.space {
+  position: absolute;
+  inset: 0;
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+}
+
+.frame {
+  position: absolute;
+  width: clamp(300px, 28vw, 420px);
+  height: clamp(370px, 52vh, 560px);
+  transform-style: preserve-3d;
+  opacity: .32;
+  transition: transform 220ms cubic-bezier(.2, .75, .3, 1);
+}
+
+.left {
+  left: clamp(-300px, -21vw, -245px);
+  top: 12%;
+  transform: translate3d(calc(var(--brand-pointer-x) * 20px), calc(var(--brand-pointer-y) * 14px), 0) rotateX(calc(-8deg + var(--brand-pointer-y) * -8deg)) rotateY(calc(24deg + var(--brand-pointer-x) * 10deg)) rotateZ(-16deg);
+}
+
+.right {
+  right: clamp(-285px, -20vw, -230px);
+  top: 54%;
+  transform: translate3d(calc(var(--brand-pointer-x) * -14px), calc(var(--brand-pointer-y) * -10px), -55px) rotateX(calc(12deg + var(--brand-pointer-y) * 7deg)) rotateY(calc(-26deg + var(--brand-pointer-x) * 8deg)) rotateZ(19deg);
+}
+
+.face,
+.edge,
+.rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 68px 28px 92px 42px;
+}
+
+.face {
+  border: 19px solid #dae3f3a6;
+  box-shadow: inset 1px 2px 0 #ffffffd9, 1px 2px 0 #ffffffd9, 0 14px 30px -17px #58627140;
+  transform: translateZ(0);
+}
+
+.edge {
+  border: 20px solid #3156ce20;
+  transform: translate3d(0, 7px, -13px);
+}
+
+.rim {
+  inset: -4px;
+  border: 1.5px solid #3156ce66;
+  border-bottom-color: #5ccbea80;
+  transform: translateZ(7px);
+}
+
+.right .face { border-width: 15px; }
+.right .edge { border-width: 16px; }
+.right .rim { border-top-color: #5ccbea80; border-bottom-color: #3156ce66; }
+
+@media (max-width: 960px), (hover: none), (pointer: coarse) {
+  .atmosphere { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame { transition: none; }
+}
+
+:global(.motion-reduced) .frame { transition: none; }
