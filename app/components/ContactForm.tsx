@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Check } from "lucide-react";
 import styles from "./ContactForm.module.css";
 
-type ContactField = "name" | "email" | "company" | "message";
+type ContactField = "name" | "email" | "message";
 type FieldErrors = Partial<Record<ContactField, string>>;
 type FormStatus = "idle" | "sending" | "error" | "success";
 
-const fieldOrder: ContactField[] = ["name", "email", "company", "message"];
+const fieldOrder: ContactField[] = ["message", "name", "email"];
 const linkedIn = "https://www.linkedin.com/in/sharathkulkarni/";
 
 export default function ContactForm() {
@@ -76,6 +76,9 @@ export default function ContactForm() {
     setErrorMessage("");
     setStatus("sending");
 
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 20_000);
+
     try {
       const serializedPayload = JSON.stringify(payload);
       if (retry.current?.payload !== serializedPayload) {
@@ -85,6 +88,7 @@ export default function ContactForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...payload, submissionId: retry.current.submissionId }),
+        signal: controller.signal,
       });
       const result: unknown = await response.json().catch(() => null);
       if (response.ok && result && typeof result === "object" && "success" in result && result.success === true) {
@@ -113,6 +117,7 @@ export default function ContactForm() {
       setErrorMessage("Your message could not be confirmed. Please try again, or contact me on LinkedIn.");
       setStatus("error");
     } finally {
+      window.clearTimeout(timeout);
       inFlight.current = false;
     }
   }
@@ -120,48 +125,50 @@ export default function ContactForm() {
   const pending = status === "sending";
 
   return (
-    <section className={styles.contact} id="contact" aria-labelledby="contact-title">
+    <section className={styles.contact} id="contact" aria-labelledby="contact-title" data-status={status}>
       <div className={styles.intro}>
-        <h2 id="contact-title">Let’s talk.</h2>
-        <p>For opportunities and conversations about healthcare, AI, product and operations.</p>
+        <div>
+          <h2 id="contact-title">Over to you.</h2>
+          <p>A role, an idea, or a good question.</p>
+        </div>
+        <svg className={styles.connection} viewBox="0 0 144 88" fill="none" aria-hidden="true">
+          <path className={styles.loop} d="M5 67C27 67 64 62 67 37C72 4 26 7 28 35C30 64 107 75 117 42C126 12 82 9 81 37C80 62 115 67 139 59" />
+          <circle cx="139" cy="59" r="3" />
+        </svg>
       </div>
       {status === "success" ? (
         <div className={styles.confirmation}>
-          <p ref={statusMessage} className={styles.success} role="status" tabIndex={-1}>Your message has been sent. I’ll reply to the email you provided.</p>
+          <Check className={styles.check} size={28} aria-hidden="true" />
+          <h3>Note sent.</h3>
+          <p ref={statusMessage} className={styles.success} role="status" tabIndex={-1}>Thanks for reaching out. I’ll reply to the email you left.</p>
           <button type="button" className={styles.reset} onClick={() => {
             retry.current = null;
-            focusAfterSubmit.current = "name";
+            focusAfterSubmit.current = "message";
             setStatus("idle");
-          }}>Send another message</button>
+          }}>Write another note</button>
         </div>
       ) : (
         <form ref={form} className={styles.form} action="/api/contact" method="post" onSubmit={sendMessage} noValidate aria-busy={pending}>
+          <div className={styles.field}>
+            <label htmlFor="contact-message">Your note</label>
+            <textarea id="contact-message" name="message" rows={3} required minLength={10} maxLength={5000} readOnly={pending}
+              placeholder="Hi Sharath, I wanted to reach out about…"
+              aria-invalid={Boolean(errors.message)} aria-describedby={errors.message ? "contact-message-error" : undefined} onChange={() => clearError("message")} />
+            {errors.message && <p id="contact-message-error" className={styles.fieldError}>{errors.message}</p>}
+          </div>
           <div className={styles.nameEmail}>
             <div className={styles.field}>
-              <label htmlFor="contact-name">Name</label>
-              <input id="contact-name" name="name" type="text" autoComplete="name" required maxLength={120} readOnly={pending}
+              <label htmlFor="contact-name">From</label>
+              <input id="contact-name" name="name" type="text" autoComplete="name" placeholder="Your name" required maxLength={120} readOnly={pending}
                 aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? "contact-name-error" : undefined} onChange={() => clearError("name")} />
               {errors.name && <p id="contact-name-error" className={styles.fieldError}>{errors.name}</p>}
             </div>
             <div className={styles.field}>
-              <label htmlFor="contact-email">Email</label>
-              <input id="contact-email" name="email" type="email" autoComplete="email" inputMode="email" spellCheck={false} autoCapitalize="none" required maxLength={254} readOnly={pending}
+              <label htmlFor="contact-email">Reply to</label>
+              <input id="contact-email" name="email" type="email" autoComplete="email" inputMode="email" spellCheck={false} autoCapitalize="none" placeholder="Your email" required maxLength={254} readOnly={pending}
                 aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? "contact-email-error" : undefined} onChange={() => clearError("email")} />
               {errors.email && <p id="contact-email-error" className={styles.fieldError}>{errors.email}</p>}
             </div>
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="contact-company">Company or organization <span>optional</span></label>
-            <input id="contact-company" name="company" type="text" autoComplete="organization" maxLength={160} readOnly={pending}
-              aria-invalid={Boolean(errors.company)} aria-describedby={errors.company ? "contact-company-error" : undefined} onChange={() => clearError("company")} />
-            {errors.company && <p id="contact-company-error" className={styles.fieldError}>{errors.company}</p>}
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="contact-message">Message</label>
-            <p id="contact-message-hint" className={styles.hint}>Reaching out about a role? Include the company and a link to the position.</p>
-            <textarea id="contact-message" name="message" rows={4} required maxLength={5000} readOnly={pending}
-              aria-invalid={Boolean(errors.message)} aria-describedby={`contact-message-hint${errors.message ? " contact-message-error" : ""}`} onChange={() => clearError("message")} />
-            {errors.message && <p id="contact-message-error" className={styles.fieldError}>{errors.message}</p>}
           </div>
           <div className={styles.honeypot} aria-hidden="true">
             <label htmlFor="contact-website">Website</label>
@@ -169,12 +176,13 @@ export default function ContactForm() {
           </div>
           {status === "error" && <p ref={statusMessage} className={styles.formError} role="alert" tabIndex={-1}>{errorMessage}</p>}
           <div className={styles.actions}>
-            <button type="submit" className={styles.send} disabled={pending}>{pending ? "Sending…" : "Send message"}</button>
+            <button type="submit" className={styles.send} disabled={pending}>{pending ? "Sending…" : "Send note"}<ArrowUpRight size={20} aria-hidden="true" /></button>
+            <a className={styles.linkedIn} href={linkedIn} target="_blank" rel="noopener noreferrer">Or LinkedIn <ArrowUpRight size={16} aria-hidden="true" /></a>
             <span className={styles.sending} role="status" aria-live="polite">{pending ? "Sending your message." : ""}</span>
           </div>
         </form>
       )}
-      <a className={styles.linkedIn} href={linkedIn} target="_blank" rel="noopener noreferrer">Prefer LinkedIn? <ArrowUpRight size={19} aria-hidden="true" /></a>
+      {status === "success" && <a className={styles.linkedIn} href={linkedIn} target="_blank" rel="noopener noreferrer">Or LinkedIn <ArrowUpRight size={16} aria-hidden="true" /></a>}
     </section>
   );
 }
