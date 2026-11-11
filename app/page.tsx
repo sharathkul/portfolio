@@ -124,7 +124,7 @@ export default function Home() {
             <h2 id="operations-title">Healthcare’s fragmentation has a cost.</h2>
             <p>Healthcare practices often run on disconnected systems. Clinical, operational and financial data sit in silos, making it hard to see where care, performance and revenue are falling short.</p>
             <p>Without that visibility, teams spend time piecing information together while missed work, delayed collections and lost revenue go unnoticed.</p>
-            <p>At <Company href="https://ncaremd.com/">nCare</Company>, I oversee operations across care programs, revenue cycle and client delivery, alongside the team building our internal tools. It’s a close view of where better data, AI and automation can help.</p>
+            <p>At <Company href="https://ncaremd.com/">nCare</Company>, I oversee operations across care programs, revenue cycle and client delivery, alongside the team building our internal tools. The aim is clearer visibility and less work spent moving information between systems.</p>
           </div>
         </section>
         <section className="story-part story-left" id="building" aria-labelledby="building-title">
@@ -132,7 +132,7 @@ export default function Home() {
           <div className="scene-copy">
             <h2 id="building-title">Building from inside the operation.</h2>
             <p>HEMI is our internal platform for day-to-day work. I built the engineering team behind it and work across the roadmap, workflows and desktop and mobile experiences.</p>
-            <p>Being close to the operation helps us decide what is worth building. I stay involved through implementation and adoption, so product decisions stay connected to how teams use the tools.</p>
+            <p>Daily operations shape what we build, where automation fits and what needs a person’s judgment. I stay involved through implementation and adoption, so product decisions stay connected to how teams use the tools.</p>
             <More label="Behind the work">
               <p>I oversee care management, remote patient monitoring, principal care management and revenue cycle operations. That includes coordinating the teams delivering the services and the engineers building the tools behind them.</p>
             </More>
@@ -142,7 +142,7 @@ export default function Home() {
           <StoryArt chapter="clients" />
           <div className="scene-copy">
             <h2 id="clients-title">It has to work after the demo.</h2>
-            <p>The work continues with the practices using nCare’s services, from demos and implementation through training and ongoing account management. What we build has to hold up for the people delivering it and the clients relying on it.</p>
+            <p>I stay involved with practices using nCare’s services, from demos and implementation through training and ongoing account management. What we build has to hold up for the people delivering it and the clients relying on it.</p>
             <More label="Delivery and communication">
               <p>I’ve led MSO and revenue cycle implementations for four external client organizations. I also oversee nCare’s brand and website work, keeping how we present the services connected to what our teams deliver.</p>
             </More>

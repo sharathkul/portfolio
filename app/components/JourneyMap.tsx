@@ -28,7 +28,7 @@ const paths = {
 };
 
 const scopes = [
-  { title: "People", detail: "Teams & managers", desktop: { x: 765, y: 251 }, mobile: { x: 55, y: 470 } },
+  { title: "People", detail: "Care & operations", desktop: { x: 765, y: 251 }, mobile: { x: 55, y: 470 } },
   { title: "Product", detail: "Engineering & HEMI", desktop: { x: 905, y: 269 }, mobile: { x: 175, y: 470 } },
   { title: "Delivery", detail: "Care, RCM & clients", desktop: { x: 1030, y: 245 }, mobile: { x: 295, y: 470 } },
 ];
@@ -40,15 +40,15 @@ function Company({ href, children }: { href: string; children: ReactNode }) {
 function Detail({ selected }: { selected: number }) {
   switch (selected) {
     case 0:
-      return <>Brand Associate at <Company href="https://bbdo.com/">BBDO</Company>, working across brand and campaigns.</>;
+      return <>Brand and campaign work at <Company href="https://bbdo.com/">BBDO</Company>.</>;
     case 1:
       return <>Co-founded a business, with responsibility across clients, sales, finances and operations.</>;
     case 2:
       return <>MBA at California State University, Fresno, 2021–2023. A move to California to explore technology and business.</>;
     case 3:
-      return <>Marketing Operations Intern at <Company href="https://www.juniper.net/us/en.html">Juniper</Company>. Stakeholder research and Jira analysis informed an internal marketing portal redesign.</>;
+      return <>At <Company href="https://www.juniper.net/us/en.html">Juniper</Company>, stakeholder research and Jira analysis informed an internal marketing portal redesign.</>;
     case 4:
-      return <>Business Intelligence &amp; Analytics Manager at <Company href="https://www.thenephrologygroupinc.com/">The Nephrology Group</Company> since 2023, with work spanning reporting, analytics and healthcare operations.</>;
+      return <>Reporting, analytics and healthcare operations at <Company href="https://www.thenephrologygroupinc.com/">The Nephrology Group</Company> since 2023.</>;
     default:
       return <>I now oversee operations at <Company href="https://ncaremd.com/">nCare</Company>, connecting care delivery, revenue cycle, product development and engineering.</>;
   }
@@ -129,7 +129,7 @@ export default function JourneyMap({ reducedMotion = true }: Props) {
 
   return (
     <div ref={host} className={styles.map} data-journey-map data-traced={traced} data-reduced-motion={reducedMotion}>
-      <div className={styles.drawing} role="group" aria-label="Career overview. Select a stop to see the role and context.">
+      <div className={styles.drawing} role="group" aria-label="Background and experience. Select a stop to learn more.">
         <Drawing mobile={false} selected={selected} id={`${id}-desktop-shadow`} />
         <Drawing mobile selected={selected} id={`${id}-mobile-shadow`} />
         {stops.map((stop, index) => (
