@@ -1,14 +1,15 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createTileBridge } from "./createTileBridge";
+import { createPracticeMechanism } from "./practiceMechanism";
 
 export type SculptureChapter = "operations" | "building" | "clients";
 export type SculptureInteraction = { x: number; y: number };
 export type ThreadProjection = { x: number; y: number }[];
 export type StorySculpture = {
   resize(width: number, height: number): void;
-  update(progress: number, reducedMotion: boolean, interaction?: SculptureInteraction, bridgeProgress?: number): void;
-  updateBridge(progress: number, reducedMotion: boolean): void;
+  update(progress: number, reducedMotion: boolean, interaction?: SculptureInteraction, mechanismProgress?: number): void;
+  updateMechanism(progress: number, reducedMotion: boolean): void;
   dispose(): void;
 };
 
@@ -22,7 +23,7 @@ export function createStorySculpture(
   canvas: HTMLCanvasElement,
   chapter: SculptureChapter,
   onProjection: (points: ThreadProjection) => void,
-  onBridgeProjection: (points: ThreadProjection) => void,
+  onMechanismProjection: (points: ThreadProjection) => void,
 ): StorySculpture {
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "low-power" });
   renderer.setClearColor(0x000000, 0);
@@ -40,6 +41,7 @@ export function createStorySculpture(
   const threadAnchors: THREE.Object3D[] = [];
   const bridgeAnchors: THREE.Object3D[] = [];
   let bridge: ReturnType<typeof createTileBridge> | undefined;
+  let practice: ReturnType<typeof createPracticeMechanism> | undefined;
   const projectedAnchor = new THREE.Vector3();
   function anchorThread(object: THREE.Object3D, x: number, y: number, z: number) {
     const anchor = new THREE.Object3D();
@@ -115,7 +117,7 @@ export function createStorySculpture(
     return { mesh, draw(amount: number) { geometry.setDrawRange(0, Math.floor(count * clamp(amount) / 6) * 6); } };
   }
 
-  let animate: (progress: number, reduced: boolean) => void;
+  let animate: ((progress: number) => void) | undefined;
   if (chapter === "operations") {
     const poses = [
       { x: -1.55, z: -.15, turn: -.16, startX: -2.0, lift: .8, tilt: -.16 },
@@ -294,91 +296,10 @@ export function createStorySculpture(
       product.scale.setScalar(mix(1.15, 1.35, rise));
     };
   } else {
-    function folder() {
-      const group = new THREE.Group();
-      box(group, [1.36, 1.25, .1], [0, .84, -.11], deepBlue, .055);
-      box(group, [.47, .2, .11], [-.35, 1.48, -.105], blue, .045);
-      for (let index = 0; index < 3; index++) {
-        const sheet = box(group, [1.1, 1.2, .04], [-.035 + index * .023, .89 + index * .055, -.01 + index * .065], paper, .025);
-        sheet.rotation.z = (index - 1) * .025;
-      }
-      for (let index = 0; index < 2; index++) box(group, [.64, .025, .015], [-.08, 1.24 - index * .17, .147], index ? ice : blue, .008);
-      box(group, [1.42, .1, .5], [0, .18, .1], deepBlue, .04);
-      box(group, [.075, .68, .38], [-.66, .53, .08], blue, .025);
-      box(group, [.075, .68, .38], [.66, .53, .08], blue, .025);
-      const front = box(group, [1.49, .88, .12], [0, .62, .31], blue, .055);
-      front.rotation.x = -.14;
-      return group;
-    }
-    plinth(-1.82, .22, 1.88, 1.58);
-    const source = folder();
-    model.add(source);
-    const sitePoses = [
-      { x: .52, z: -1.05, height: .56 },
-      { x: 1.96, z: -.58, height: .8 },
-      { x: 2.13, z: .86, height: .63 },
-      { x: .68, z: 1.24, height: .7 },
-    ];
-    const sites = sitePoses.map((pose, index) => {
-      plinth(pose.x, pose.z, .98, .92);
-      const site = new THREE.Group();
-      box(site, [.67, pose.height, .57], [0, pose.height / 2 + .03, 0], index % 2 ? blue : porcelain, .065);
-      box(site, [.54, pose.height * .71, .035], [0, pose.height / 2 + .04, .3], index % 2 ? opticalGlass : glass, .025);
-      // Different physical practices share a service connection, rather than
-      // suggesting four identical software screens or fabricated dashboards.
-      box(site, [.75, .07, .64], [0, pose.height + .055, 0], index % 2 ? deepBlue : blue, .035);
-      box(site, [.13, .23, .025], [.14, .145, .33], deepBlue, .015);
-      const clinicMark = index % 2 ? paper : blue;
-      box(site, [.035, .17, .025], [-.14, pose.height * .67 + .02, .33], clinicMark, .009);
-      box(site, [.17, .035, .025], [-.14, pose.height * .67 + .02, .33], clinicMark, .009);
-      model.add(site);
-      return site;
-    });
-    anchorThread(source, -.64, .55, .39);
-    anchorThread(sites[3], .14, .18, .34);
-    anchorThread(sites[1], .30, sitePoses[1].height + .06, .29);
-    const curves = sitePoses.map(pose => new THREE.CubicBezierCurve3(
-      new THREE.Vector3(-1.05, .38, .34), new THREE.Vector3(-.28, .72, pose.z * .35),
-      new THREE.Vector3(pose.x - .55, .62, pose.z - .1), new THREE.Vector3(pose.x - .27, .3, pose.z + .2),
-    ));
-    const bridges = curves.map(curve => connector(curve, .034));
-    const traces = curves.map(curve => connector(new THREE.CubicBezierCurve3(
-      curve.v0.clone().add(new THREE.Vector3(0, .014, 0)), curve.v1.clone().add(new THREE.Vector3(0, .014, 0)),
-      curve.v2.clone().add(new THREE.Vector3(0, .014, 0)), curve.v3.clone().add(new THREE.Vector3(0, .014, 0)),
-    ), .011, signal));
-    const packetPaper = physical(0xfffefa, .6, { transparent: true });
-    const packetAccent = physical(accentColor, .35, { transparent: true });
-    const packet = new THREE.Group();
-    box(packet, [.35, .065, .43], [0, 0, 0], packetPaper, .025);
-    box(packet, [.2, .014, .034], [-.035, .041, -.08], packetAccent, .008);
-    model.add(packet);
-    animate = (progress, reduced) => {
-      const settle = smooth(phase(progress, .02, .5));
-      source.position.set(mix(-2.02, -1.82, settle), mix(.5, .19, settle), .22);
-      source.rotation.set(0, mix(-.26, -.05, settle), mix(-.08, 0, settle));
-      source.scale.set(1.04, 1.2, 1.1);
-      sites.forEach((site, index) => {
-        const amount = smooth(phase(progress, .12 + index * .08, .58 + index * .08));
-        const pose = sitePoses[index];
-        site.position.set(mix(pose.x - .16, pose.x, amount), .19 + (1 - amount) * .26, pose.z);
-        site.rotation.y = mix(index % 2 ? .17 : -.17, -.06, amount);
-        site.scale.setScalar(mix(.86, 1, amount));
-        bridges[index].draw(phase(progress, .15 + index * .09, .58 + index * .09));
-        traces[index].draw(phase(progress, .21 + index * .09, .65 + index * .09));
-      });
-      // Four finite deliveries echo the four client implementations. A
-      // single packet resets invisibly at the origin between each branch.
-      const delivered = phase(progress, .28, .94);
-      const branch = Math.min(3, Math.floor(delivered * 4));
-      const travel = delivered >= 1 ? 1 : (delivered * 4) % 1;
-      packet.position.copy(curves[branch].getPoint(travel));
-      packet.position.y += .09;
-      packet.rotation.y = mix(-.3, .3, travel);
-      const opacity = reduced ? 0 : clamp(Math.min(travel * 8, (1 - travel) * 8));
-      packet.visible = opacity > .001;
-      packetPaper.opacity = opacity;
-      packetAccent.opacity = opacity;
-    };
+    const metal = physical(0x9aa7ad, .42, { metalness: .48, clearcoat: .12 });
+    const brass = physical(0x86572f, .56, { metalness: .16, clearcoat: .05 });
+    practice = createPracticeMechanism({ box, ownGeometry, blue, deepBlue, ice, paper, porcelain, ink, metal, brass });
+    model.add(practice.group);
   }
 
   const hemisphere = new THREE.HemisphereLight(0xffffff, 0xb5bbc6, 2.3);
@@ -410,7 +331,12 @@ export function createStorySculpture(
 
   const apply = (progress: number, reduced: boolean, interaction: SculptureInteraction = { x: 0, y: 0 }) => {
     const p = reduced ? 1 : clamp(progress);
-    animate(p, reduced);
+    if (practice) {
+      // Keep the feeder and its receiving lip in register as the card catches.
+      model.updateMatrixWorld(true);
+      return;
+    }
+    animate?.(p);
     const x = reduced ? 0 : Math.max(-.5, Math.min(.5, interaction.x || 0));
     const y = reduced ? 0 : Math.max(-.5, Math.min(.5, interaction.y || 0));
     model.rotation.y = mix(-.18, .16, p) + x * .16;
@@ -422,9 +348,15 @@ export function createStorySculpture(
   // do not clip a raised document or a folder during a scroll transition.
   const envelope = new THREE.Box3();
   const envelopePoints: THREE.Vector3[] = [];
-  const poses = [0, .25, .5, .75, 1].map(progress => ({ progress, interaction: { x: 0, y: 0 } }));
-  for (const progress of [0, .5, 1]) for (const x of [-.5, .5]) for (const y of [-.5, .5]) poses.push({ progress, interaction: { x, y } });
+  const samples = practice ? [0, .22, .40, .48, .69, .9, 1] : [0, .25, .5, .75, 1];
+  const poses = samples.map(progress => ({ progress, interaction: { x: 0, y: 0 } }));
+  if (!practice) {
+    for (const progress of [0, .5, 1]) for (const x of [-.5, .5]) for (const y of [-.5, .5]) {
+      poses.push({ progress, interaction: { x, y } });
+    }
+  }
   for (const pose of poses) {
+    practice?.update(pose.progress);
     bridge?.update(pose.progress);
     apply(pose.progress, false, pose.interaction);
     envelope.union(new THREE.Box3().setFromObject(model));
@@ -440,11 +372,8 @@ export function createStorySculpture(
   }
   const target = envelope.getCenter(new THREE.Vector3());
   target.y -= (envelope.max.y - envelope.min.y) * .08;
-  const direction = new THREE.Vector3(...(chapter === "building" ? [3.7, 4.7, 9] : chapter === "operations" ? [4.8, 6.8, 8.8] : [4.4, 4.9, 8.6]) as [number, number, number]).normalize();
+  const direction = new THREE.Vector3(...(chapter === "building" ? [3.7, 4.7, 9] : chapter === "operations" ? [4.8, 6.8, 8.8] : [1.8, 5.7, 10]) as [number, number, number]).normalize();
   let disposed = false;
-  let lastProgress = 1;
-  let lastReduced = true;
-  let lastInteraction: SculptureInteraction = { x: 0, y: 0 };
   let lastWidth = 0;
   let lastHeight = 0;
 
@@ -471,9 +400,15 @@ export function createStorySculpture(
       const pixelsPerUnit = (surface.y - testPoint.y) * lastHeight / .1;
       const contactLift = THREE.MathUtils.clamp(8.9 / Math.max(1, pixelsPerUnit), .088, .78);
       anchors[0] = project(hit.localToWorld(projectedAnchor.set(0, contactLift, 0)));
-      onBridgeProjection(anchors);
+      onMechanismProjection(anchors);
     }
-    onProjection(threadAnchors.map(anchor => project(projectedAnchor.setFromMatrixPosition(anchor.matrixWorld))));
+    if (practice) {
+      const { group, triggerSurface, trackExitWaypoint } = practice;
+      onMechanismProjection([triggerSurface, trackExitWaypoint].map(point =>
+        project(group.localToWorld(projectedAnchor.copy(point)))));
+    } else {
+      onProjection(threadAnchors.map(anchor => project(projectedAnchor.setFromMatrixPosition(anchor.matrixWorld))));
+    }
   };
   const fitCamera = () => {
     const projected = new THREE.Vector3();
@@ -484,12 +419,13 @@ export function createStorySculpture(
       camera.updateMatrixWorld(true);
       if (envelopePoints.every(point => {
         projected.copy(point).project(camera);
-        return Math.abs(projected.x) <= .92 && projected.y <= .9 && projected.y >= (bridge ? -.84 : -.7);
+        return Math.abs(projected.x) <= .92 && projected.y <= .9 && projected.y >= (practice || bridge ? -.84 : -.7);
       })) break;
     }
   };
-  bridge?.update(1);
-  apply(lastProgress, lastReduced);
+  const mechanism = practice || bridge;
+  mechanism?.update(1);
+  apply(1, true);
 
   return {
     resize(width, height) {
@@ -511,19 +447,20 @@ export function createStorySculpture(
       fitCamera();
       render();
     },
-    update(progress, reducedMotion, interaction, bridgeProgress = 0) {
+    update(progress, reducedMotion, interaction, mechanismProgress = 0) {
       if (disposed) return;
-      lastProgress = clamp(progress);
-      lastReduced = reducedMotion;
-      lastInteraction = interaction ?? { x: 0, y: 0 };
-      bridge?.update(reducedMotion ? 1 : clamp(bridgeProgress));
-      apply(lastProgress, lastReduced, lastInteraction);
+      const changed = mechanism?.update(reducedMotion ? 1 : clamp(mechanismProgress));
+      if (practice) {
+        if (changed) renderer.render(scene, camera);
+        return;
+      }
+      apply(progress, reducedMotion, interaction);
       render();
     },
-    updateBridge(progress, reducedMotion) {
-      if (disposed || !bridge) return;
+    updateMechanism(progress, reducedMotion) {
+      if (disposed || !mechanism) return;
       // Neither the camera nor a thread anchor moved. Do not notify layout.
-      if (bridge.update(reducedMotion ? 1 : clamp(progress))) renderer.render(scene, camera);
+      if (mechanism.update(reducedMotion ? 1 : clamp(progress))) renderer.render(scene, camera);
     },
     dispose() {
       if (disposed) return;

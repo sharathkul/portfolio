@@ -1,39 +1,49 @@
 import { useId } from "react";
 
 export default function ThreadOrb() {
-  const id = `thread-orb-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
-  const groove = "M-7.9-3.2C-4.1-4.6 3.8-2.1 7.9 3.1";
+  const id = `thread-bead-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const bore = "translate(.45 .15) rotate(-28)";
+  const opening = <ellipse transform={bore} cx="-.16" cy=".38" rx="4.28" ry="2.7" />;
 
   return (
     <g data-thread-orb="" visibility="hidden" pointerEvents="none" aria-hidden="true">
       <defs>
-        <radialGradient id={`${id}-metal`} cx=".29" cy=".22" r=".84">
-          <stop stopColor="#eff3f3" />
-          <stop offset=".28" stopColor="#c5d2dc" />
-          <stop offset=".52" stopColor="#95a9bd" />
-          <stop offset=".7" stopColor="#667d98" />
-          <stop offset=".88" stopColor="#354963" />
-          <stop offset="1" stopColor="#778ba0" />
-        </radialGradient>
-        <linearGradient id={`${id}-bevel`} x2=".65" y2="1">
-          <stop stopColor="#fcfaf4" />
-          <stop offset=".34" stopColor="#b1c4d2" />
-          <stop offset=".69" stopColor="#23334b" />
-          <stop offset="1" stopColor="#8091a6" />
+        <linearGradient id={`${id}-steel`} x1=".1" y1=".06" x2=".84" y2=".95">
+          <stop stopColor="#718299" />
+          <stop offset=".15" stopColor="#c2ccd1" />
+          <stop offset=".27" stopColor="#f0eee4" />
+          <stop offset=".42" stopColor="#aab6bf" />
+          <stop offset=".56" stopColor="#748798" />
+          <stop offset=".79" stopColor="#30465c" />
+          <stop offset=".94" stopColor="#53677b" />
+          <stop offset="1" stopColor="#a5adb0" />
         </linearGradient>
-        <radialGradient id={`${id}-shadow`}>
-          <stop stopColor="#263b55" stopOpacity=".35" />
-          <stop offset="1" stopColor="#263b55" stopOpacity="0" />
-        </radialGradient>
-        <clipPath id={`${id}-surface`}><circle r="7.95" /></clipPath>
+        <linearGradient id={`${id}-cut`} x1=".2" y1="0" x2=".64" y2="1">
+          <stop stopColor="#182b3a" />
+          <stop offset=".37" stopColor="#405267" />
+          <stop offset=".68" stopColor="#ac9f87" />
+          <stop offset="1" stopColor="#e6d8b9" />
+        </linearGradient>
+        <mask id={`${id}-opening`} maskUnits="userSpaceOnUse" x="-12" y="-12" width="24" height="24">
+          <rect x="-12" y="-12" width="24" height="24" fill="white" />
+          <g fill="black">{opening}</g>
+        </mask>
+        <clipPath id={`${id}-rim`}>
+          <path fillRule="evenodd" clipRule="evenodd" d="M8.6 0A8.6 8.6 0 1 0-8.6 0A8.6 8.6 0 1 0 8.6 0ZM7.1 0A7.1 7.1 0 1 0-7.1 0A7.1 7.1 0 1 0 7.1 0Z" />
+        </clipPath>
       </defs>
-      <ellipse cx="1.8" cy="7.6" rx="9.2" ry="2.6" fill={`url(#${id}-shadow)`} />
-      <circle r="8.9" fill={`url(#${id}-bevel)`} stroke="#f4f2ec" strokeWidth=".7" />
-      <circle r="7.95" fill={`url(#${id}-metal)`} />
-      <g data-orb-glint="" clipPath={`url(#${id}-surface)`} fill="none" strokeLinecap="round">
-        <path d={groove} transform="translate(0 .65)" stroke="#d5dfe5" strokeWidth="1.35" />
-        <path d={groove} stroke="#263b59" strokeWidth="1.7" />
-        <path d="M-3.9-3.82Q-1.7-3.64-.2-3.19" stroke="#b9d0df" strokeWidth=".55" />
+      <ellipse cx="1.15" cy="7.85" rx="6.75" ry="1.15" fill="#253950" opacity=".16" />
+      <g mask={`url(#${id}-opening)`}>
+        <circle r="8.63" fill={`url(#${id}-steel)`} stroke="#46586a" strokeWidth=".54" />
+        <g data-orb-glint="" clipPath={`url(#${id}-rim)`} fill="none" strokeLinecap="round">
+          <path d="M-8.5 2.7a8.8 8.8 0 0 1 1.55-7.95" stroke="#f4efe4" strokeWidth="1.12" />
+          <path d="m5.7 5.25 1.35 1.25" stroke="#c3c6bc" strokeWidth=".8" />
+        </g>
+        <g transform={bore}>
+          <ellipse rx="5.68" ry="4.48" fill="#e1e2d7" />
+          <ellipse cy="-.16" rx="5.41" ry="4.06" fill={`url(#${id}-cut)`} />
+          <ellipse cx="-.16" cy=".38" rx="4.4" ry="2.88" fill="#2e4052" />
+        </g>
       </g>
     </g>
   );

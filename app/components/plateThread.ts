@@ -1,4 +1,5 @@
 import { bridgeThread } from "./bridgeThread";
+import { practiceThread } from "./practiceThread";
 
 type Point = { x: number; y: number };
 export type Projection = Point[] | null;
@@ -6,7 +7,6 @@ export type Projection = Point[] | null;
 const fallbackSelectors: Record<string, string[]> = {
   operations: ["[data-motion-part='paper-left']", "[data-motion-part='paper-bottom']", "[data-motion-part='paper-right']"],
   building: ["[data-motion-part='care']", "[data-motion-part='product']", "[data-motion-part='engineering']"],
-  clients: ["[data-motion-part='source-folder']", "[data-motion-part='client-folder'] > g > g:first-child", "[data-motion-part='client-folder'] > g > g:last-child"],
 };
 
 export function measurePlate(element: HTMLElement, fromLeft: boolean) {
@@ -18,15 +18,24 @@ export function measurePlate(element: HTMLElement, fromLeft: boolean) {
   const dir = fromLeft ? 1 : -1;
   const edge = fromLeft ? 0 : box.width;
   const entry = { x: edge, y: offset.y + height * .26 };
-  const exit = { x: edge, y: offset.y + height * .88 };
+  const practice = element.dataset.scene === "clients" ? practiceThread(element) : null;
+  const exit = { x: practice ? box.width : edge, y: offset.y + height * .88 };
   const allPaths = element.querySelectorAll<SVGPathElement>("[data-plate-edging], [data-plate-base], [data-plate-drawn]");
   const ink = element.querySelector<SVGPathElement>("[data-plate-drawn]")!;
-  const fallbackObjects = fallbackSelectors[element.dataset.scene!].map(selector => element.querySelector(selector)!);
+  const fallbackObjects = (fallbackSelectors[element.dataset.scene!] ?? []).map(selector => element.querySelector(selector)!);
   const bridge = element.dataset.scene === "building" ? bridgeThread(element) : null;
   const local = (p: Point) => ({ x: offset.x + p.x * width, y: offset.y + p.y * height });
   element.querySelectorAll("[data-plate-layer]").forEach(layer => layer.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`));
 
   function draw(projection: Projection) {
+    if (practice) {
+      const layout = element.dataset.practiceProjection || element.dataset.practiceFallbackProjection;
+      if (!layout) return;
+      const points: Point[] = JSON.parse(layout);
+      const d = practice.draw(entry, exit, points.map(local), box.width);
+      allPaths.forEach(path => path.setAttribute("d", d));
+      return;
+    }
     let points: Point[];
     if (projection?.length === 3) {
       points = projection.map(local);
@@ -62,5 +71,5 @@ export function measurePlate(element: HTMLElement, fromLeft: boolean) {
     allPaths.forEach(path => path.setAttribute("d", d));
   }
 
-  return { entry, exit, ink, draw, fraction: bridge?.fraction };
+  return { entry, exit, ink, draw, fraction: practice?.fraction ?? bridge?.fraction };
 }

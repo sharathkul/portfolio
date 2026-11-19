@@ -5,7 +5,6 @@ import { useEffect, useRef } from "react";
 type Scene = {
   element: HTMLElement;
   kind: string;
-  packet: SVGElement | null;
   top: number;
   left: number;
   width: number;
@@ -34,7 +33,7 @@ export default function SceneMotion({ reducedMotion }: { reducedMotion: boolean 
     if (!story || !hero) return;
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
     const scenes: Scene[] = Array.from(story.querySelectorAll<HTMLElement>("[data-scene]"))
-      .map(element => ({ element, kind: element.dataset.scene ?? "", packet: element.querySelector<SVGElement>("[data-motion-part='packet']"), top: 0, left: 0, width: 1, height: 1, visible: false, progress: -1, reducedMotion: null, pointer: { x: 0, y: 0 }, renderedPointer: { x: 0, y: 0 } }));
+      .map(element => ({ element, kind: element.dataset.scene ?? "", top: 0, left: 0, width: 1, height: 1, visible: false, progress: -1, reducedMotion: null, pointer: { x: 0, y: 0 }, renderedPointer: { x: 0, y: 0 } }));
     let frame = 0;
     let measureFrame = 0;
     let disposed = false;
@@ -64,14 +63,6 @@ export default function SceneMotion({ reducedMotion }: { reducedMotion: boolean 
         scene.element.style.setProperty("--scene-pointer-x", interaction.x.toFixed(4));
         scene.element.style.setProperty("--scene-pointer-y", interaction.y.toFixed(4));
         scene.element.dispatchEvent(new CustomEvent("scene:progress", { detail: { progress, reducedMotion: reduced, interaction } }));
-        if (scene.packet) {
-          const t = clamp((progress - .28) / .6);
-          const q = 1 - t;
-          const x = q * q * q * -72 + 3 * q * q * t * -11 + 3 * q * t * t * 52 + t * t * t * 105;
-          const y = q * q * q * -20 + 3 * q * q * t * -104 + 3 * q * t * t * 98 + t * t * t * 24;
-          scene.element.style.setProperty("--packet-opacity", (reduced ? 0 : clamp(Math.min(t * 7, (1 - t) * 7))).toFixed(4));
-          scene.packet.setAttribute("transform", `translate(${x.toFixed(2)} ${y.toFixed(2)})`);
-        }
       }
     };
     const request = () => {

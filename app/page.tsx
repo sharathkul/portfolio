@@ -140,7 +140,7 @@ export default function Home() {
               <p>A process can make sense on a screen and still get in someone’s way. Training and client conversations show where to clarify a step, revise a workflow or rethink the tool behind it.</p>
             </div>
           </div>
-          <StoryArt chapter="clients" />
+          <StoryArt chapter="clients" reducedMotion={reducedMotion} />
         </section>
         <section className="story-part journey-part" id="journey" aria-labelledby="journey-title">
           <div className="journey-intro">

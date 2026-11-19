@@ -1,15 +1,12 @@
-type Point = { x: number; y: number };
+import { timedThread, xy, type ThreadPoint as Point } from "./timedThread";
 const orbRadius = 8.9;
 
 // The first three stops are mechanical cues, not fractions of the SVG length.
 // Expanding the artwork on a phone must not change when the ball hits a leaf.
 const stops = [0, .30, .48, .68, .86, .94, 1];
-const xy = ({ x, y }: Point) => `${x.toFixed(2)} ${y.toFixed(2)}`;
 
 export function bridgeThread(element: HTMLElement) {
-  const gauges = Array.from(element.querySelectorAll<SVGPathElement>("[data-bridge-leg]"));
-  const distances = [0];
-  let total = 0;
+  const route = timedThread(element, "[data-bridge-leg]", stops);
 
   function draw(entry: Point, exit: Point, points: Point[], width: number, fromLeft: boolean) {
     const [face, near, far, computer] = points;
@@ -37,26 +34,7 @@ export function bridgeThread(element: HTMLElement) {
       `C${xy({ x: computer.x + lead * .85, y: computer.y - lead * .35 })} ${xy({ x: fromLeft ? width - 5 : exit.x - lead * .55, y: exit.y })} ${xy({ x: fromLeft ? width * .73 : exit.x - lead * .42, y: exit.y })} L${xy(exit)}`,
     ];
     const origins = [entry, hit, push, start, end, computer];
-    total = 0;
-    legs.forEach((d, i) => {
-      const gauge = gauges[i];
-      const segment = `M${xy(origins[i])} ${d}`;
-      if (gauge.getAttribute("d") !== segment) {
-        gauge.setAttribute("d", segment);
-        gauge.dataset.length = String(gauge.getTotalLength());
-      }
-      total += Number(gauge.dataset.length);
-      distances[i + 1] = total;
-    });
-    return `M${xy(entry)} ${legs.join(" ")}`;
+    return route.measure(origins, legs);
   }
-
-  function fraction(p: number) {
-    if (!total || p <= 0 || p >= 1) return p;
-    const next = stops.findIndex(stop => stop >= p);
-    const i = next - 1;
-    const t = (p - stops[i]) / (stops[next] - stops[i]);
-    return (distances[i] + (distances[next] - distances[i]) * t) / total;
-  }
-  return { draw, fraction };
+  return { draw, fraction: route.fraction };
 }

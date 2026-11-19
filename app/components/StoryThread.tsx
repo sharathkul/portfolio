@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { measurePlate, type Projection } from "./plateThread";
 import { inkTrack } from "./threadInk";
 import ThreadOrb from "./ThreadOrb";
+import { practiceCycleShare } from "./practiceThread";
 
 const outsideSegments = [0, 1, 2, 3, 4] as const;
 
@@ -31,7 +32,9 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
     const plates = new Map<HTMLElement, ReturnType<typeof measurePlate>>();
     let strokes: ReturnType<typeof inkTrack>[] = [];
     const bridge = art.find(element => element.dataset.scene === "building");
+    const practice = art.find(element => element.dataset.scene === "clients");
     let bridgeStroke: ReturnType<typeof inkTrack> | undefined;
+    let practiceStroke: ReturnType<typeof inkTrack> | undefined;
     let mapStart = 0;
     let mapEnd = 1;
     let originY = 0;
@@ -46,7 +49,11 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
       if (disposed || document.hidden || !strokes.length || !orb || !map) return;
       const scroll = Math.max(0, window.scrollY - storyTop);
       const focus = viewportHeight * .54;
-      const marker = scroll + focus + (originY - focus) * Math.max(0, 1 - scroll / (viewportHeight * .8));
+      const replay = practice?.dataset.practiceReplay;
+      const readingMarker = scroll + focus + (originY - focus) * Math.max(0, 1 - scroll / (viewportHeight * .8));
+      const marker = !paused.current && replay !== undefined && practiceStroke
+        ? practiceStroke.start + (practiceStroke.end - practiceStroke.start) * Number(replay)
+        : readingMarker;
       let showOrb = false;
       strokes.forEach((stroke, i) => {
         const amount = paused.current ? 1 : Math.max(0, Math.min(1, (marker - stroke.start) / Math.max(1, stroke.end - stroke.start)));
@@ -54,6 +61,13 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
         if (stroke === bridgeStroke && bridge && bridge.dataset.bridgeProgress !== String(amount)) {
           bridge.dataset.bridgeProgress = String(amount);
           bridge.dispatchEvent(new CustomEvent("thread:bridge-progress", { detail: amount }));
+        }
+        if (stroke === practiceStroke && practice) {
+          const action = Math.min(1, amount / practiceCycleShare);
+          if (practice.dataset.practiceProgress !== String(action)) {
+            practice.dataset.practiceProgress = String(action);
+            practice.dispatchEvent(new CustomEvent("thread:practice-progress", { detail: action }));
+          }
         }
         stroke.paint(amount, active ? orb : null);
         if (active) showOrb = true;
@@ -111,7 +125,7 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
         const rect = element.getBoundingClientRect();
         const x = rect.left - bounds.left;
         const y = rect.top - bounds.top;
-        const fromLeft = mobile || x + rect.width / 2 < bounds.width / 2;
+        const fromLeft = mobile || element === practice || x + rect.width / 2 < bounds.width / 2;
         const plate = measurePlate(element, fromLeft);
         plates.set(element, plate);
         plate.draw(element.dataset.threadProjection ? JSON.parse(element.dataset.threadProjection) : null);
@@ -121,8 +135,9 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
         const exitY = y + plate.exit.y;
         const middle = (entryY + exitY) / 2;
         const handoff = Math.min(viewportHeight * .36, 270);
-        const start = element === bridge ? middle - handoff : entryY;
-        const end = element === bridge ? middle + handoff : exitY;
+        const mechanical = element === bridge || element === practice;
+        const start = mechanical ? middle - handoff : entryY;
+        const end = mechanical ? middle + handoff : exitY;
         if (element === bridge) {
           // Chapter navigation should bring the reader in before the first
           // impact, even when the phone layout places the art above the title.
@@ -131,13 +146,19 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
           const scrollAtApproach = start + (end - start) * .16 - viewportHeight * .54;
           chapter.style.scrollMarginTop = `${Math.max(0, chapterTop - scrollAtApproach)}px`;
         }
+        if (element === practice) {
+          const scrollAtApproach = start + (end - start) * .08 - viewportHeight * .54;
+          element.style.scrollMarginTop = `${Math.max(0, y - scrollAtApproach)}px`;
+        }
         const corner = Math.min(Math.abs(edge - rail) * .65, mobile ? 24 : 65);
         d += ` L${rail} ${entryY - corner} Q${rail} ${entryY} ${edge} ${entryY}`;
         finishOutside(index, start);
         const stroke = inkTrack(plate.ink, start, end, x, y, false, plate.fraction);
         if (element === bridge) bridgeStroke = stroke;
+        if (element === practice) practiceStroke = stroke;
         strokes.push(stroke);
-        d = `M${edge} ${exitY} Q${rail} ${exitY} ${rail} ${exitY + corner}`;
+        if (element === practice) rail = right;
+        d = `M${x + plate.exit.x} ${exitY} Q${rail} ${exitY} ${rail} ${exitY + corner}`;
         startY = end;
         previousBottom = element.closest("section")!.getBoundingClientRect().bottom - bounds.top;
       }
@@ -178,17 +199,19 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
     };
     const fallback = (event: Event) => {
       const element = event.target as HTMLElement;
-      if (!element.dataset.threadProjection) {
+      if (element !== practice && !element.dataset.threadProjection) {
         plates.get(element)?.draw(null);
         request();
       }
     };
-    const bridgeLayout = () => {
-      if (!bridge) return;
-      plates.get(bridge)?.draw(bridge.dataset.threadProjection ? JSON.parse(bridge.dataset.threadProjection) : null);
+    const mechanismLayout = (event: Event) => {
+      const element = event.target as HTMLElement;
+      plates.get(element)?.draw(element.dataset.threadProjection ? JSON.parse(element.dataset.threadProjection) : null);
       request();
     };
-    bridge?.addEventListener("thread:bridge-layout", bridgeLayout);
+    bridge?.addEventListener("thread:bridge-layout", mechanismLayout);
+    practice?.addEventListener("thread:practice-layout", mechanismLayout);
+    practice?.addEventListener("thread:replay-frame", request);
     story.addEventListener("thread:projection", projection);
     art.forEach(element => element.addEventListener("scene:progress", fallback));
     const observer = new ResizeObserver(scheduleMeasure);
@@ -208,7 +231,9 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
       cancelAnimationFrame(layoutFrame);
       observer.disconnect();
       story.removeEventListener("thread:projection", projection);
-      bridge?.removeEventListener("thread:bridge-layout", bridgeLayout);
+      bridge?.removeEventListener("thread:bridge-layout", mechanismLayout);
+      practice?.removeEventListener("thread:practice-layout", mechanismLayout);
+      practice?.removeEventListener("thread:replay-frame", request);
       art.forEach(element => element.removeEventListener("scene:progress", fallback));
       window.removeEventListener("resize", scheduleMeasure);
       window.removeEventListener("scroll", request);

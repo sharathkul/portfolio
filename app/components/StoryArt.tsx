@@ -1,11 +1,13 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Devices, Engineering, Folder, Paper, type StoryPalette } from "./StoryShapes";
+import { Devices, Engineering, Paper, type StoryPalette } from "./StoryShapes";
 import styles from "./ConnectedStory.module.css";
 import motion from "./StoryArt.module.css";
 import StorySculpture from "./StorySculpture";
 import TileBridgeFallback from "./TileBridgeFallback";
+import PracticeFolderFallback from "./PracticeFolderFallback";
+import PracticeReplay from "./PracticeReplay";
 
 function OperationPanel({ x, turn, kind, palette }: { x: number; turn: number; kind: "care" | "information" | "payment"; palette: StoryPalette }) {
   return (
@@ -22,23 +24,12 @@ function OperationPanel({ x, turn, kind, palette }: { x: number; turn: number; k
   );
 }
 
-function Practice({ x, y, palette }: { x: number; y: number; palette: StoryPalette }) {
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <path className={styles.paperEdge} fill={palette.edge} d="M-27-29H27V30H-27Z" transform="translate(4 5)" />
-      <path className={styles.paper} fill={palette.paper} d="M-27-29H27V30H-27Z" />
-      <path className={styles.clinicRoof} d="M-31-29H31" />
-      <path className={styles.clinicMark} d="M-11-16V0M-19-8H-3" />
-      <path className={styles.clinicDoor} fill={palette.accent} d="M6 7H18V30H6Z" />
-    </g>
-  );
-}
-
-function SceneThread({ bridge }: { bridge: boolean }) {
+function SceneThread({ chapter }: { chapter: "operations" | "building" | "clients" }) {
   return (
     <svg className={motion.plateThread} data-plate-layer="over" fill="none"
       preserveAspectRatio="none" aria-hidden="true" focusable="false">
-      {bridge && <defs>{Array.from({ length: 6 }, (_, i) => <path key={i} data-bridge-leg="" />)}</defs>}
+      {chapter === "building" && <defs>{Array.from({ length: 6 }, (_, i) => <path key={i} data-bridge-leg="" />)}</defs>}
+      {chapter === "clients" && <defs>{[0, 1, 2, 3].map(i => <path key={i} data-practice-leg="" />)}</defs>}
       <path data-plate-edging="" stroke="var(--paper)" strokeWidth="4" strokeOpacity=".85"
         vectorEffect="non-scaling-stroke" strokeLinecap="round" />
       <path className="story-thread-base" data-plate-base="" pathLength={1} />
@@ -47,7 +38,7 @@ function SceneThread({ bridge }: { bridge: boolean }) {
   );
 }
 
-export default function StoryArt({ chapter }: { chapter: "operations" | "building" | "clients" }) {
+export default function StoryArt({ chapter, reducedMotion = false }: { chapter: "operations" | "building" | "clients"; reducedMotion?: boolean }) {
   const id = `art-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const [sculptureReady, setSculptureReady] = useState(false);
   const palette: StoryPalette = {
@@ -57,9 +48,12 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
   };
 
   return (
-    <div id={chapter === "building" ? "bridge" : undefined} className={`story-art ${motion.scene}`} data-story-art data-scene={chapter} data-sculpture-ready={sculptureReady} aria-hidden="true">
+    <div id={{ building: "bridge", clients: "practice-handoff", operations: undefined }[chapter]}
+      className={`story-art ${motion.scene}`} data-story-art data-scene={chapter} data-sculpture-ready={sculptureReady}
+      aria-hidden={chapter === "clients" ? undefined : true} role={chapter === "clients" ? "group" : undefined}
+      aria-label={chapter === "clients" ? "Practice handoff. A card catches on the folder lip. Its weight pulls the feeder guide back, letting the same card slide through." : undefined}>
       <div className={motion.plate}>
-        <div className={motion.drawing} data-plate-drawing>
+        <div className={motion.drawing} data-plate-drawing aria-hidden="true">
           <StorySculpture chapter={chapter} onReady={setSculptureReady} />
           <svg viewBox="-255 -180 510 360" fill="none" focusable="false">
             <defs>
@@ -96,21 +90,7 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
                   <TileBridgeFallback />
                 </>
               ) : (
-                <>
-                  <path className={styles.deliveryBase} d="M-72-20C-11-104 52 98 105 24" />
-                  <path className={`${styles.localThread} ${motion.deliveryTrace}`} d="M-72-20C-11-104 52 98 105 24" pathLength="1" />
-                  <g className={motion.sourceFolder} data-motion-part="source-folder"><Folder x={-140} y={-23} turn={-8} palette={palette} /></g>
-                  <g className={motion.clientFolder} data-motion-part="client-folder"><g transform="translate(145 3)">
-                    <Practice x={-37} y={-37} palette={palette} />
-                    <Practice x={40} y={-48} palette={palette} />
-                    <Practice x={-34} y={44} palette={palette} />
-                    <Practice x={44} y={35} palette={palette} />
-                  </g></g>
-                  <g className={motion.packet} data-motion-part="packet" transform="translate(105 24)">
-                    <circle r="7" fill="#fffefa" stroke="var(--accent)" strokeWidth="2" />
-                    <circle r="2.3" fill="var(--accent)" />
-                  </g>
-                </>
+                <PracticeFolderFallback />
               )}
             </g>
           </svg>
@@ -118,10 +98,10 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
         <div className={motion.sculptureLabels} data-story-labels>
           {chapter === "operations" ? <><span>Care</span><span>Information</span><span>Billing</span></>
             : chapter === "building" ? <><span>Care teams</span><span>Internal tools</span><span>Engineering</span></>
-              : <><span>Implementation</span><span>Practice teams</span></>}
+              : <><span>Feeder</span>{!reducedMotion && <PracticeReplay />}<span>Practice folder</span></>}
         </div>
       </div>
-      <SceneThread bridge={chapter === "building"} />
+      <SceneThread chapter={chapter} />
     </div>
   );
 }

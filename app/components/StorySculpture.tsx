@@ -24,17 +24,22 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
     let progress = Number(slot.style.getPropertyValue("--scene-progress") || 1);
     let interaction = { x: 0, y: 0 };
     let reducedMotion = !!slot.closest(".motion-reduced");
+    const mechanism = { building: "bridge", clients: "practice", operations: null }[chapter];
+    const progressKey = mechanism + "Progress";
+    const projectionKey = mechanism + "Projection";
+    const progressEvent = "thread:" + mechanism + "-progress";
     let previousProjection: string | undefined;
-    let previousBridgeProjection: string | undefined;
-    let bridgeProgress = Number(slot.dataset.bridgeProgress || 0);
+    let previousMechanismProjection: string | undefined;
+    let mechanismProgress = mechanism ? Number(slot.dataset[progressKey] || 0) : 0;
 
-    const shareBridgeProjection = (points: ThreadProjection | null) => {
+    const shareMechanismProjection = (points: ThreadProjection | null) => {
+      if (!mechanism) return;
       const next = points ? JSON.stringify(points) : undefined;
-      if (next === previousBridgeProjection) return;
-      previousBridgeProjection = next;
-      if (next) slot.dataset.bridgeProjection = next;
-      else delete slot.dataset.bridgeProjection;
-      slot.dispatchEvent(new CustomEvent("thread:bridge-layout", { bubbles: true, detail: points }));
+      if (next === previousMechanismProjection) return;
+      previousMechanismProjection = next;
+      if (next) slot.dataset[projectionKey] = next;
+      else delete slot.dataset[projectionKey];
+      slot.dispatchEvent(new CustomEvent("thread:" + mechanism + "-layout", { bubbles: true, detail: points }));
     };
 
     const shareProjection = (points: ThreadProjection | null) => {
@@ -53,13 +58,13 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
       surface.dataset.ready = "false";
       onReady(false);
       slot.dataset.sculptureStatus = "fallback";
-      shareBridgeProjection(null);
+      shareMechanismProjection(null);
       shareProjection(null);
     };
     const paint = () => {
       if (!sculpture || !visible || document.hidden || contextLost) return;
       try {
-        sculpture.update(progress, reducedMotion, interaction, bridgeProgress);
+        sculpture.update(progress, reducedMotion, interaction, mechanismProgress);
         if (!ready) {
           ready = true;
           surface.dataset.ready = "true";
@@ -74,7 +79,7 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
       try {
         const { createStorySculpture } = await import("./createStorySculpture");
         if (disposed || !visible) return;
-        sculpture = createStorySculpture(surface, chapter, shareProjection, shareBridgeProjection);
+        sculpture = createStorySculpture(surface, chapter, shareProjection, shareMechanismProjection);
         sculpture.resize(width, height);
         paint();
       } catch {
@@ -91,12 +96,12 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
       interaction = detail.interaction ?? { x: 0, y: 0 };
       paint();
     };
-    const onBridgeProgress = (event: Event) => {
+    const onMechanismProgress = (event: Event) => {
       const next = (event as CustomEvent<number>).detail;
-      if (!Number.isFinite(next) || next === bridgeProgress) return;
-      bridgeProgress = next;
+      if (!Number.isFinite(next) || next === mechanismProgress) return;
+      mechanismProgress = next;
       if (!ready || !visible || contextLost || document.hidden) return;
-      try { sculpture?.updateBridge(bridgeProgress, reducedMotion); }
+      try { sculpture?.updateMechanism(mechanismProgress, reducedMotion); }
       catch { fallback(); }
     };
     const intersection = new IntersectionObserver(([entry]) => {
@@ -124,7 +129,7 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
       void load();
     };
     slot.addEventListener("scene:progress", onProgress);
-    if (chapter === "building") slot.addEventListener("thread:bridge-progress", onBridgeProgress);
+    if (mechanism) slot.addEventListener(progressEvent, onMechanismProgress);
     surface.addEventListener("webglcontextlost", lost);
     surface.addEventListener("webglcontextrestored", restored);
     document.addEventListener("visibilitychange", paint);
@@ -136,12 +141,12 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
       intersection.disconnect();
       resize.disconnect();
       slot.removeEventListener("scene:progress", onProgress);
-      slot.removeEventListener("thread:bridge-progress", onBridgeProgress);
+      if (mechanism) slot.removeEventListener(progressEvent, onMechanismProgress);
       surface.removeEventListener("webglcontextlost", lost);
       surface.removeEventListener("webglcontextrestored", restored);
       document.removeEventListener("visibilitychange", paint);
       sculpture?.dispose();
-      shareBridgeProjection(null);
+      shareMechanismProjection(null);
       shareProjection(null);
     };
   }, [chapter, onReady]);
