@@ -120,24 +120,24 @@ export default function Home() {
           </div>
           <StoryArt chapter="operations" />
           <div className="scene-copy">
-            <p>Patient information, team workloads, follow-up and payments often live in separate systems. Those data silos make it hard to see what’s been missed, what needs attention and where a practice is losing revenue.</p>
-            <p>Healthcare analytics was the starting point. Better reporting made the gaps visible; closing them meant getting closer to the work. At <Company href="https://ncaremd.com/">nCare</Company>, I now oversee operations and the engineering team building our internal tools, connecting operational requirements with product decisions.</p>
+            <p>Patient information, follow-up and billing often live in separate systems. People end up doing the connecting. Work gets repeated, priorities get buried and a practice can lose revenue without a clear view of why.</p>
+            <p>Healthcare analytics was the starting point. Reporting made the gaps visible; getting closer to operations showed what it would take to close them. At <Company href="https://ncaremd.com/">nCare</Company>, I now oversee operations and the engineering team building our internal tools.</p>
           </div>
         </section>
         <section className="story-part story-left building-part" id="building" aria-labelledby="building-title">
           <StoryArt chapter="building" />
           <div className="scene-copy">
             <h2 id="building-title">Turning operational problems into software.</h2>
-            <p>We built an internal platform for care and practice operations, with desktop and mobile tools. Operational requirements shape the roadmap, from what teams need to see to how work moves between them.</p>
-            <p>Engineering stays close to the operation, so product decisions meet the reality of daily use. That feedback informs each iteration, including where AI and automation could reduce repetitive work and where human judgment matters.</p>
+            <p>We built an internal platform for care and practice operations, with desktop and mobile tools. The roadmap grows out of the work: information teams need, decisions they make and handoffs that slow them down.</p>
+            <p>Engineering stays close to the people using it. Daily use reveals the awkward steps a specification can miss. That feedback guides the next iteration, including where AI and automation could remove repetitive work and where a person still needs to make the call.</p>
           </div>
         </section>
         <section className="story-part clients-part" id="clients" aria-labelledby="clients-title">
           <div className="scene-copy delivery-copy">
             <h2 id="clients-title">Implementation is part of the design.</h2>
             <div className="delivery-body">
-              <p>Care and billing services have to fit around existing systems, staff roles and daily workflows. Implementation brings those constraints into view, giving product and engineering decisions a practical test.</p>
-              <p>Rollout, training and ongoing client conversations reveal where the design and the actual work diverge. Those observations return to the roadmap and the internal tools supporting the teams.</p>
+              <p>Care and billing services have to fit the systems, staff roles and routines already in place. During implementation, those constraints become concrete: who owns a task, where it happens and what the next team needs to know.</p>
+              <p>A process can make sense on a screen and still get in someone’s way. Training and client conversations show where to clarify a step, revise a workflow or rethink the tool behind it.</p>
             </div>
           </div>
           <StoryArt chapter="clients" />
@@ -145,7 +145,7 @@ export default function Home() {
         <section className="story-part journey-part" id="journey" aria-labelledby="journey-title">
           <div className="journey-intro">
             <h2 id="journey-title">How the pieces came together.</h2>
-            <p>Brand, business and technology each brought a different way of seeing a problem. That perspective still shapes the work in healthcare today.</p>
+            <p>Brand work, running a business and exploring technology each brought a different way to understand a problem. Healthcare brought those threads together.</p>
           </div>
           <JourneyMap reducedMotion={reducedMotion} />
           <ContactForm />
