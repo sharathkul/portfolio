@@ -36,6 +36,7 @@
   border: 1px solid color-mix(in srgb, var(--accent), transparent 48%);
   background: repeating-linear-gradient(131deg, transparent 0 4px, color-mix(in srgb, var(--accent), transparent 67%) 4px 5px), var(--paper);
   transform: translate(2%, 1.4%) rotate(2.3deg);
+  box-shadow: 2px 9px 15px -10px rgb(28 40 68 / 38%);
 }
 
 .print {
@@ -44,9 +45,14 @@
   padding: 2.8% 2.8% 10%;
   background: color-mix(in srgb, var(--paper) 38%, white);
   border: 1px solid color-mix(in srgb, var(--accent), transparent 62%);
-  box-shadow: 0 2px 5px color-mix(in srgb, var(--accent), transparent 91%);
+  box-shadow:
+    1px 1px 0 #e5e3dc,
+    2px 2px 0 #c5c5c1,
+    2px 4px 0 #deddd8,
+    3px 7px 12px -5px rgb(28 40 68 / 26%);
   transform: rotate(-1.1deg);
-  transform-origin: 15% 93%;
+  /* The left edge of the print hinges on the thread as the paper tilts. */
+  transform-origin: 0% 94%;
 }
 
 .hero .portrait {
@@ -76,15 +82,42 @@
   stroke-linejoin: round;
 }
 
+.threadPass {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.eyelet {
+  fill: var(--accent-shadow);
+  stroke: #b7bac1;
+  stroke-width: 1;
+}
+
+.cord,
+.glint {
+  fill: none;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.cord {
+  stroke: var(--accent);
+  stroke-width: 2.5px;
+  filter: drop-shadow(0 1px .65px rgb(28 40 68 / 34%));
+}
+
+.glint { stroke: #b6c3d4; stroke-width: 1px; }
+
 .connector {
   position: absolute;
-  left: -.4%;
-  bottom: 5%;
-  width: 8px;
-  height: 8px;
-  border: 1.5px solid var(--accent);
-  border-radius: 50%;
-  background: var(--paper);
+  left: 0;
+  top: 94%;
+  width: 0;
+  height: 0;
 }
 
 .hero .copy {
@@ -141,9 +174,13 @@
 @media (min-width: 961px) and (pointer: fine) and (hover: hover) and (prefers-reduced-motion: no-preference) {
   .composition[data-reduced-motion="false"] .print {
     transform: perspective(1100px)
-      rotateX(calc(var(--scene-pointer-y, 0) * -3deg))
-      rotateY(calc(var(--scene-pointer-x, 0) * 4deg))
+      rotateX(calc(var(--scene-pointer-y, 0) * -7deg))
+      rotateY(calc(var(--scene-pointer-x, 0) * 9deg))
       rotate(-1.1deg);
+  }
+
+  .composition[data-reduced-motion="false"]::before {
+    transform: translate(calc(2% - var(--scene-pointer-x, 0) * 3px), calc(1.4% - var(--scene-pointer-y, 0) * 2px)) rotate(2.3deg);
   }
 }
 

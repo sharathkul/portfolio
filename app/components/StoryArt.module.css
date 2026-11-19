@@ -80,6 +80,21 @@
   mask-image: linear-gradient(135deg, #000, transparent 84%);
 }
 
+.scene > .plateThread {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* The mount and grid paint first. The sculpture sits between both thread passes. */
+.plateThread[data-plate-layer="under"] { z-index: 1; }
+.plateThread[data-plate-layer="over"] { z-index: 3; }
+.drawing > svg, .sculpture { z-index: 2; }
+
 .drawing > svg {
   position: absolute;
   inset: 0;
@@ -104,6 +119,8 @@
 .sculpture[data-ready="true"] { opacity: 1; }
 
 .sculptureLabels {
+  position: relative;
+  z-index: 4;
   display: flex;
   align-items: center;
   gap: 10px;

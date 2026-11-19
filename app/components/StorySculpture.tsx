@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { SculptureChapter, SculptureInteraction, StorySculpture as Sculpture } from "./createStorySculpture";
+import type { SculptureChapter, SculptureInteraction, StorySculpture as Sculpture, ThreadProjection } from "./createStorySculpture";
 import styles from "./StoryArt.module.css";
 
 type ProgressEvent = CustomEvent<{ progress: number; reducedMotion: boolean; interaction?: SculptureInteraction }>;
@@ -24,6 +24,16 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
     let progress = Number(slot.style.getPropertyValue("--scene-progress") || 1);
     let interaction = { x: 0, y: 0 };
     let reducedMotion = !!slot.closest(".motion-reduced");
+    let previousProjection: string | undefined;
+
+    const shareProjection = (points: ThreadProjection | null) => {
+      const next = points ? JSON.stringify(points) : undefined;
+      if (next === previousProjection) return;
+      previousProjection = next;
+      if (next) slot.dataset.threadProjection = next;
+      else delete slot.dataset.threadProjection;
+      slot.dispatchEvent(new CustomEvent("thread:projection", { bubbles: true, detail: points }));
+    };
 
     const fallback = () => {
       sculpture?.dispose();
@@ -32,6 +42,7 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
       surface.dataset.ready = "false";
       onReady(false);
       slot.dataset.sculptureStatus = "fallback";
+      shareProjection(null);
     };
     const paint = () => {
       if (!sculpture || !visible || document.hidden || contextLost) return;
@@ -51,7 +62,7 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
       try {
         const { createStorySculpture } = await import("./createStorySculpture");
         if (disposed || !visible) return;
-        sculpture = createStorySculpture(surface, chapter);
+        sculpture = createStorySculpture(surface, chapter, shareProjection);
         sculpture.resize(width, height);
         paint();
       } catch {
@@ -108,6 +119,7 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
       surface.removeEventListener("webglcontextrestored", restored);
       document.removeEventListener("visibilitychange", paint);
       sculpture?.dispose();
+      shareProjection(null);
     };
   }, [chapter, onReady]);
 

@@ -3,6 +3,7 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 
 export type SculptureChapter = "operations" | "building" | "clients";
 export type SculptureInteraction = { x: number; y: number };
+export type ThreadProjection = { x: number; y: number }[];
 export type StorySculpture = {
   resize(width: number, height: number): void;
   update(progress: number, reducedMotion: boolean, interaction?: SculptureInteraction): void;
@@ -15,7 +16,11 @@ const smooth = (value: number) => value * value * (3 - 2 * value);
 const mix = THREE.MathUtils.lerp;
 
 /** A small, render-on-demand sculpture. It owns no scroll or animation loop. */
-export function createStorySculpture(canvas: HTMLCanvasElement, chapter: SculptureChapter): StorySculpture {
+export function createStorySculpture(
+  canvas: HTMLCanvasElement,
+  chapter: SculptureChapter,
+  onProjection: (points: ThreadProjection) => void,
+): StorySculpture {
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "low-power" });
   renderer.setClearColor(0x000000, 0);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
@@ -29,6 +34,14 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
   const camera = new THREE.PerspectiveCamera(32, 1.45, .1, 40);
   const model = new THREE.Group();
   scene.add(model);
+  const threadAnchors: THREE.Object3D[] = [];
+  const projectedAnchor = new THREE.Vector3();
+  function anchorThread(object: THREE.Object3D, x: number, y: number, z: number) {
+    const anchor = new THREE.Object3D();
+    anchor.position.set(x, y, z);
+    object.add(anchor);
+    threadAnchors.push(anchor);
+  }
   const geometries = new Set<THREE.BufferGeometry>();
   const materials = new Set<THREE.Material>();
   const boxes = new Map<string, THREE.BufferGeometry>();
@@ -132,6 +145,9 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
     // The information panel keeps a folded navy corner as the shared accent.
     const accent = box(stacks[1], [.36, .035, .18], [.32, .32, -.5], blue, .025);
     accent.rotation.y = -.15;
+    anchorThread(stacks[0], -.48, .20, .28);
+    anchorThread(stacks[1], -.08, .265, .46);
+    anchorThread(stacks[2], .48, .20, .15);
     const sourceChannel = connector(new THREE.CubicBezierCurve3(new THREE.Vector3(-1.55, .24, .35), new THREE.Vector3(-1.2, .34, 1.04), new THREE.Vector3(-.4, .34, 1.04), new THREE.Vector3(0, .24, .72)), .022, signal);
     const workingChannel = connector(new THREE.CubicBezierCurve3(new THREE.Vector3(1.55, .24, .3), new THREE.Vector3(1.2, .34, .97), new THREE.Vector3(.4, .34, .97), new THREE.Vector3(0, .24, .72)), .03, blue);
     animate = progress => {
@@ -186,6 +202,9 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
     phone.rotation.y = -.12;
     product.add(phone);
     model.add(product);
+    anchorThread(care, -.42, .20, .20);
+    anchorThread(product, -.20, .52, .067);
+    anchorThread(engineering, .58, .48, .14);
 
     const intelligence = new THREE.Group();
     intelligence.position.set(-.75, .95, -.7);
@@ -293,6 +312,9 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
       model.add(site);
       return site;
     });
+    anchorThread(source, -.64, .55, .39);
+    anchorThread(sites[3], .14, .18, .34);
+    anchorThread(sites[1], .30, sitePoses[1].height + .06, .29);
     const curves = sitePoses.map(pose => new THREE.CubicBezierCurve3(
       new THREE.Vector3(-1.05, .38, .34), new THREE.Vector3(-.28, .72, pose.z * .35),
       new THREE.Vector3(pose.x - .55, .62, pose.z - .1), new THREE.Vector3(pose.x - .27, .3, pose.z + .2),
@@ -403,7 +425,19 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
   let lastWidth = 0;
   let lastHeight = 0;
 
-  const render = () => { if (!disposed) renderer.render(scene, camera); };
+  const render = () => {
+    if (disposed) return;
+    renderer.render(scene, camera);
+    // The renderer has updated the world matrices for this exact pose.
+    // Normalized positions remain independent of canvas pixel density.
+    onProjection(threadAnchors.map(anchor => {
+      projectedAnchor.setFromMatrixPosition(anchor.matrixWorld).project(camera);
+      return {
+        x: Math.round(clamp((projectedAnchor.x + 1) / 2) * 10000) / 10000,
+        y: Math.round(clamp((1 - projectedAnchor.y) / 2) * 10000) / 10000,
+      };
+    }));
+  };
   const fitCamera = () => {
     const projected = new THREE.Vector3();
     for (let distance = 5; distance <= 24; distance += .12) {

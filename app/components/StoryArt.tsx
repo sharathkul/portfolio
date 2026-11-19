@@ -33,6 +33,27 @@ function Practice({ x, y, palette }: { x: number; y: number; palette: StoryPalet
   );
 }
 
+function PlateThread({ layer }: { layer: "under" | "over" }) {
+  const clipId = `thread-surface-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  return (
+    <svg className={motion.plateThread} data-plate-layer={layer} fill="none"
+      preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      {layer === "over" && (
+        <defs>
+          <clipPath id={clipId} clipPathUnits="userSpaceOnUse" fill="white">
+            <ellipse data-thread-surface="0" />
+            <ellipse data-thread-surface="1" />
+          </clipPath>
+        </defs>
+      )}
+      <g clipPath={layer === "over" ? `url(#${clipId})` : undefined}>
+        <path className="story-thread-base" data-plate-base={layer} pathLength={1} />
+        <path className="story-thread-drawn" data-plate-drawn={layer} pathLength={1} />
+      </g>
+    </svg>
+  );
+}
+
 export default function StoryArt({ chapter }: { chapter: "operations" | "building" | "clients" }) {
   const id = `art-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const [sculptureReady, setSculptureReady] = useState(false);
@@ -45,7 +66,7 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
   return (
     <div className={`story-art ${motion.scene}`} data-story-art data-scene={chapter} data-sculpture-ready={sculptureReady} aria-hidden="true">
       <div className={motion.plate}>
-        <div className={motion.drawing}>
+        <div className={motion.drawing} data-plate-drawing>
           <StorySculpture chapter={chapter} onReady={setSculptureReady} />
           <svg viewBox="-255 -180 510 360" fill="none" focusable="false">
             <defs>
@@ -106,6 +127,8 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
               : <><span>Implementation</span><span>Practice teams</span></>}
         </div>
       </div>
+      <PlateThread layer="under" />
+      <PlateThread layer="over" />
     </div>
   );
 }

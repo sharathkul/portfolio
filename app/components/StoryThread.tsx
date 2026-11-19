@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { measurePlate, type Projection, type Stroke } from "./plateThread";
+
+const outsideSegments = [0, 1, 2, 3] as const;
 
 export default function StoryThread({ reducedMotion }: { reducedMotion: boolean }) {
   const svg = useRef<SVGSVGElement>(null);
-  const base = useRef<SVGPathElement>(null);
-  const thread = useRef<SVGPathElement>(null);
   const paused = useRef(reducedMotion);
   const refresh = useRef<() => void>(() => {});
 
@@ -16,115 +17,126 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
 
   useEffect(() => {
     const host = svg.current;
-    const line = thread.current;
     const story = host?.closest("main");
-    if (!host || !line || !story) return;
+    if (!host || !story) return;
+    const art = Array.from(story.querySelectorAll<HTMLElement>("[data-story-art]"));
+    const segments = Array.from(host.querySelectorAll<SVGGElement>("g"));
+    const plates = new Map<HTMLElement, ReturnType<typeof measurePlate>>();
+    let strokes: Stroke[] = [];
     let frame = 0;
-    let measureFrame = 0;
-    let disposed = false;
-    let width = 0;
+    let layoutFrame = 0;
     let viewportHeight = window.innerHeight;
-    let start = 0;
-    let end = 1;
-    let length = 1;
+    let storyTop = 0;
+    let disposed = false;
 
-    const render = () => {
+    function render() {
       frame = 0;
       if (disposed || document.hidden) return;
-      const progress = paused.current ? 1 : Math.min(1, Math.max(0,
-        (window.scrollY + viewportHeight * .72 - start) / Math.max(1, end - start),
-      ));
-      line.style.strokeDashoffset = `${(1 - progress) * length}`;
-    };
-    const request = () => {
+      const marker = window.scrollY + viewportHeight * .72 - storyTop;
+      for (const stroke of strokes) {
+        const amount = paused.current ? 1 : Math.max(0, Math.min(1, (marker - stroke.start) / Math.max(1, stroke.end - stroke.start)));
+        const offset = (1 - amount).toFixed(5);
+        stroke.paths.forEach(path => {
+          if (path.style.strokeDashoffset !== offset) path.style.strokeDashoffset = offset;
+        });
+      }
+    }
+    function request() {
       if (!frame && !disposed && !document.hidden) frame = requestAnimationFrame(render);
-    };
+    }
     refresh.current = request;
 
     const measure = () => {
-      measureFrame = 0;
-      if (disposed) return;
+      layoutFrame = 0;
       const bounds = story.getBoundingClientRect();
-      const scroll = window.scrollY;
       const origin = story.querySelector("[data-connector-origin]")?.getBoundingClientRect();
-      const introCopy = story.querySelector(".introduction-copy")?.getBoundingClientRect();
+      const intro = story.querySelector(".introduction-copy")?.getBoundingClientRect();
       const portrait = story.querySelector(".portrait-composition")?.getBoundingClientRect();
-      const art = Array.from(story.querySelectorAll<HTMLElement>("[data-story-art]"))
-        .map(element => ({ box: element.getBoundingClientRect(), section: element.closest("section")!.getBoundingClientRect() }));
       const map = story.querySelector("[data-journey-map] [role='group']")?.getBoundingClientRect();
-      if (!origin || !introCopy || !portrait || art.length !== 3 || !map) return;
-      width = bounds.width;
+      if (!origin || !portrait || !intro || !map || art.length !== 3) return;
+      storyTop = bounds.top + window.scrollY;
       viewportHeight = window.innerHeight;
-      const mobile = width <= 960;
-      // Centered print mounts narrow on tablets. The thread belongs in the
-      // page gutter even when a print has wider margins than its paragraph.
-      const left = mobile ? 14 : Math.max(24, width * .035);
-      const right = width - left;
+      const mobile = bounds.width <= 960;
+      const left = mobile ? 14 : Math.max(24, bounds.width * .035);
+      const right = bounds.width - left;
       const first = { x: origin.left - bounds.left + origin.width / 2, y: origin.top - bounds.top + origin.height / 2 };
-      const bend = mobile ? Math.min(first.y + 30, introCopy.top - bounds.top - 14) : Math.max(first.y + 36, portrait.bottom - bounds.top + 18);
+      const bend = mobile ? Math.min(first.y + 30, intro.top - bounds.top - 14) : Math.max(first.y + 36, portrait.bottom - bounds.top + 18);
       let rail = left;
-      let previousSectionBottom = 0;
+      let previousBottom = 0;
+      let startY = first.y;
       let d = `M${first.x} ${first.y} C${first.x - 28} ${first.y + 12} ${rail} ${bend - 18} ${rail} ${bend}`;
-
-      // A side change happens in the empty corridor below the entire row.
-      // Neither an expanded paragraph nor a taller image can enter it.
-      const switchRail = (next: number, corridor: number) => {
+      strokes = [];
+      function switchRail(next: number) {
         if (next === rail) return;
-        d += ` L${rail} ${corridor - 20} C${rail} ${corridor + 36} ${next} ${corridor - 36} ${next} ${corridor + 20}`;
+        const y = previousBottom - 48;
+        d += ` L${rail} ${y - 20} C${rail} ${y + 36} ${next} ${y - 36} ${next} ${y + 20}`;
         rail = next;
-      };
-      for (const item of art) {
-        const box = item.box;
-        const top = box.top - bounds.top;
-        const bottom = box.bottom - bounds.top;
-        const x = box.left - bounds.left + box.width / 2;
-        const y = top + box.height / 2;
-        const side = mobile || x < width / 2 ? left : right;
-        if (side !== rail) switchRail(side, previousSectionBottom - 48);
-        const curve = Math.min(mobile ? 70 : 150, box.height * .3);
-        d += ` L${rail} ${top + 12} C${rail} ${y - curve} ${x} ${y - curve} ${x} ${y}`;
-        d += ` C${x} ${y + curve} ${rail} ${y + curve} ${rail} ${bottom - 12}`;
-        previousSectionBottom = item.section.bottom - bounds.top;
       }
-      switchRail(left, previousSectionBottom - 48);
-      const ending = {
-        x: map.left - bounds.left + map.width * (mobile ? 82 / 350 : 70 / 1100),
-        y: map.top - bounds.top + map.height * (mobile ? 35 / 550 : 200 / 390),
-      };
-      d += ` L${rail} ${ending.y - 28} Q${rail} ${ending.y} ${ending.x} ${ending.y}`;
-      base.current?.setAttribute("d", d);
-      line.setAttribute("d", d);
-      host.setAttribute("viewBox", `0 0 ${width} ${bounds.height}`);
-      length = line.getTotalLength();
-      line.style.strokeDasharray = `${length}`;
-      start = bounds.top + scroll + first.y;
-      end = bounds.top + scroll + ending.y;
+      function finishOutside(index: number, end: number) {
+        const paths = segments[index].querySelectorAll("path");
+        paths.forEach(path => path.setAttribute("d", d));
+        strokes.push({ paths: [paths[1]], start: startY, end });
+      }
+      for (const [index, element] of art.entries()) {
+        const rect = element.getBoundingClientRect();
+        const x = rect.left - bounds.left;
+        const y = rect.top - bounds.top;
+        const fromLeft = mobile || x + rect.width / 2 < bounds.width / 2;
+        const plate = measurePlate(element, fromLeft);
+        plates.set(element, plate);
+        plate.draw(element.dataset.threadProjection ? JSON.parse(element.dataset.threadProjection) : null);
+        switchRail(fromLeft ? left : right);
+        const edge = x + plate.entry.x;
+        const entryY = y + plate.entry.y;
+        const exitY = y + plate.exit.y;
+        const corner = Math.min(Math.abs(edge - rail) * .65, mobile ? 24 : 65);
+        d += ` L${rail} ${entryY - corner} Q${rail} ${entryY} ${edge} ${entryY}`;
+        finishOutside(index, entryY);
+        strokes.push({ paths: plate.paths, start: entryY, end: exitY });
+        d = `M${edge} ${exitY} Q${rail} ${exitY} ${rail} ${exitY + corner}`;
+        startY = exitY;
+        previousBottom = element.closest("section")!.getBoundingClientRect().bottom - bounds.top;
+      }
+      switchRail(left);
+      const endX = map.left - bounds.left + map.width * (mobile ? 82 / 350 : 70 / 1100);
+      const endY = map.top - bounds.top + map.height * (mobile ? 35 / 550 : 200 / 390);
+      d += ` L${rail} ${endY - 28} Q${rail} ${endY} ${endX} ${endY}`;
+      finishOutside(3, endY);
+      host.setAttribute("viewBox", `0 0 ${bounds.width} ${bounds.height}`);
       host.style.opacity = "1";
-      request();
+      render();
     };
     const scheduleMeasure = () => {
-      if (!measureFrame && !disposed) measureFrame = requestAnimationFrame(measure);
+      if (!layoutFrame && !disposed) layoutFrame = requestAnimationFrame(measure);
     };
-    const resize = () => {
-      if (Math.abs(window.innerWidth - width) > 1) scheduleMeasure();
+    const projection = (event: Event) => {
+      plates.get(event.target as HTMLElement)?.draw((event as CustomEvent<Projection>).detail);
     };
+    const fallback = (event: Event) => {
+      const element = event.target as HTMLElement;
+      if (!element.dataset.threadProjection) plates.get(element)?.draw(null);
+    };
+    story.addEventListener("thread:projection", projection);
+    art.forEach(element => element.addEventListener("scene:progress", fallback));
     const observer = new ResizeObserver(scheduleMeasure);
     observer.observe(story);
-    story.querySelectorAll("[data-story-art], .story-part, .portrait-composition, .introduction-copy, [data-journey-map]")
+    story.querySelectorAll("[data-story-art], [data-plate-drawing], .story-part, .portrait-composition, .introduction-copy, [data-journey-map]")
       .forEach(element => observer.observe(element));
-    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("resize", scheduleMeasure, { passive: true });
     window.addEventListener("scroll", request, { passive: true });
     document.addEventListener("visibilitychange", request);
-    document.fonts.ready.then(() => { if (!disposed) scheduleMeasure(); });
+    document.fonts.ready.then(scheduleMeasure);
     scheduleMeasure();
 
     return () => {
       disposed = true;
       refresh.current = () => {};
       cancelAnimationFrame(frame);
-      cancelAnimationFrame(measureFrame);
+      cancelAnimationFrame(layoutFrame);
       observer.disconnect();
-      window.removeEventListener("resize", resize);
+      story.removeEventListener("thread:projection", projection);
+      art.forEach(element => element.removeEventListener("scene:progress", fallback));
+      window.removeEventListener("resize", scheduleMeasure);
       window.removeEventListener("scroll", request);
       document.removeEventListener("visibilitychange", request);
     };
@@ -132,8 +144,10 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
 
   return (
     <svg ref={svg} className="story-thread" fill="none" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-      <path ref={base} className="story-thread-base" />
-      <path ref={thread} className="story-thread-drawn" />
+      {outsideSegments.map(index => <g key={index} data-thread-outside={index}>
+        <path className="story-thread-base" pathLength={1} />
+        <path className="story-thread-drawn" pathLength={1} />
+      </g>)}
     </svg>
   );
 }

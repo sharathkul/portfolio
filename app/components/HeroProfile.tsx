@@ -24,6 +24,11 @@ export default function HeroProfile({ reducedMotion }: { reducedMotion: boolean 
               <path d="M33 11C32 4 12 6 9 15C6 22 27 17 27 23C28 30 12 35 5 31M23 29C31 27 38 23 43 18" />
               <path d="M42 7C40 14 36 25 34 32M56 5C49 12 43 17 38 20C44 20 47 25 52 28C58 32 63 31 70 28" />
             </svg>
+            <svg className={styles.threadPass} viewBox="0 0 360 400" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+              <ellipse className={styles.eyelet} cx="69" cy="338" rx="4.1" ry="2.3" transform="rotate(-23 69 338)" />
+              <path className={styles.cord} d="M69 338 C62 341 65 349 54 353 C45 356 37 351 29 357 C23 361 23 366 14 370 L0 376" />
+              <path className={styles.glint} d="M67 340 C62 344 62 350 54 352 C50 354 47 353 43 353" />
+            </svg>
           </div>
           <span className={styles.connector} data-connector-origin aria-hidden="true" />
         </div>
