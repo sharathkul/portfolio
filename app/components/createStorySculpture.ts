@@ -64,15 +64,17 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
     return mesh;
   }
 
-  function pageStack(width: number, depth: number, sheets = 3) {
+  function pageStack(width: number, depth: number, sheets = 3, markings = true) {
     const group = new THREE.Group();
     for (let index = 0; index < sheets; index++) {
       const sheet = box(group, [width, .055, depth], [(index % 2 ? .025 : -.015), .045 + index * .063, 0], index === 0 ? ice : paper, .025);
       sheet.rotation.y = (index - sheets + 1) * .035;
     }
     const top = .08 + (sheets - 1) * .063;
-    for (let index = 0; index < 3; index++) {
-      box(group, [width * (index === 2 ? .43 : .65), .013, .026], [-width * .08, top, -depth * .22 + index * depth * .16], index === 0 ? blue : ink, .008);
+    if (markings) {
+      for (let index = 0; index < 3; index++) {
+        box(group, [width * (index === 2 ? .43 : .65), .013, .026], [-width * .08, top, -depth * .22 + index * depth * .16], index === 0 ? blue : ink, .008);
+      }
     }
     return group;
   }
@@ -141,11 +143,30 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
     ];
     const stacks = poses.map((pose, index) => {
       plinth(pose.x, pose.z, 1.55, 1.62);
-      const stack = pageStack(1.13, 1.4, index === 1 ? 4 : 3);
+      const stack = pageStack(1.13, 1.4, index === 1 ? 4 : 3, index === 1);
+      if (index === 0) {
+        // A care symbol makes the first physical panel legible before its label.
+        box(stack, [.12, .025, .63], [0, .235, 0], blue, .025);
+        box(stack, [.63, .025, .12], [0, .235, 0], blue, .025);
+      } else if (index === 2) {
+        const ring = new THREE.Mesh(ownGeometry(new THREE.TorusGeometry(.31, .022, 6, 28)), blue);
+        ring.rotation.x = Math.PI / 2;
+        ring.position.y = .24;
+        stack.add(ring);
+        const currencyCurve = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(.08, .25, -.16), new THREE.Vector3(-.06, .25, -.17),
+          new THREE.Vector3(-.12, .25, -.08), new THREE.Vector3(-.035, .25, -.015),
+          new THREE.Vector3(.095, .25, .05), new THREE.Vector3(.1, .25, .13),
+          new THREE.Vector3(-.02, .25, .18), new THREE.Vector3(-.1, .25, .15),
+        ]);
+        const currency = new THREE.Mesh(ownGeometry(new THREE.TubeGeometry(currencyCurve, 22, .018, 5, false)), blue);
+        stack.add(currency);
+        box(stack, [.025, .025, .44], [0, .25, 0], blue, .008);
+      }
       model.add(stack);
       return stack;
     });
-    // A folded cobalt corner gives the paper forms a distinct material accent.
+    // The information panel keeps a folded cobalt corner as the shared accent.
     const accent = box(stacks[1], [.36, .035, .18], [.32, .32, -.5], blue, .025);
     accent.rotation.y = -.15;
     const sourceChannel = connector(new THREE.CubicBezierCurve3(new THREE.Vector3(-1.55, .24, .35), new THREE.Vector3(-1.2, .34, 1.04), new THREE.Vector3(-.4, .34, 1.04), new THREE.Vector3(0, .24, .72)), .022, signal);
@@ -299,7 +320,13 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
       const site = new THREE.Group();
       box(site, [.67, pose.height, .57], [0, pose.height / 2 + .03, 0], index % 2 ? blue : porcelain, .065);
       box(site, [.54, pose.height * .71, .035], [0, pose.height / 2 + .04, .3], index % 2 ? opticalGlass : glass, .025);
-      box(site, [.035, pose.height * .5, .014], [-.17, pose.height / 2 + .04, .325], signal, .01);
+      // Different physical practices share a service connection, rather than
+      // suggesting four identical software screens or fabricated dashboards.
+      box(site, [.75, .07, .64], [0, pose.height + .055, 0], index % 2 ? deepBlue : blue, .035);
+      box(site, [.13, .23, .025], [.14, .145, .33], deepBlue, .015);
+      const clinicMark = index % 2 ? paper : blue;
+      box(site, [.035, .17, .025], [-.14, pose.height * .67 + .02, .33], clinicMark, .009);
+      box(site, [.17, .035, .025], [-.14, pose.height * .67 + .02, .33], clinicMark, .009);
       model.add(site);
       return site;
     });

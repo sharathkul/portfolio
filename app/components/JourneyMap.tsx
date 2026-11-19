@@ -29,8 +29,8 @@ const paths = {
 
 const scopes = [
   { title: "People", detail: "Care & operations", desktop: { x: 765, y: 251 }, mobile: { x: 55, y: 470 } },
-  { title: "Product", detail: "Engineering & HEMI", desktop: { x: 905, y: 269 }, mobile: { x: 175, y: 470 } },
-  { title: "Delivery", detail: "Care, RCM & clients", desktop: { x: 1030, y: 245 }, mobile: { x: 295, y: 470 } },
+  { title: "Product", detail: "Internal platform", desktop: { x: 905, y: 269 }, mobile: { x: 175, y: 470 } },
+  { title: "Delivery", detail: "Care & clients", desktop: { x: 1030, y: 245 }, mobile: { x: 295, y: 470 } },
 ];
 
 function Company({ href, children }: { href: string; children: ReactNode }) {
@@ -46,11 +46,11 @@ function Detail({ selected }: { selected: number }) {
     case 2:
       return <>MBA at California State University, Fresno, 2021–2023. A move to California to explore technology and business.</>;
     case 3:
-      return <>At <Company href="https://www.juniper.net/us/en.html">Juniper</Company>, stakeholder research and Jira analysis informed an internal marketing portal redesign.</>;
+      return <>At <Company href="https://www.juniper.net/us/en.html">Juniper</Company>, research with the teams using an internal marketing portal helped shape its redesign.</>;
     case 4:
       return <>Reporting, analytics and healthcare operations at <Company href="https://www.thenephrologygroupinc.com/">The Nephrology Group</Company> since 2023.</>;
     default:
-      return <>Care delivery, revenue cycle, product development and engineering now meet in day-to-day operations at <Company href="https://ncaremd.com/">nCare</Company>.</>;
+      return <>Healthcare operations, product requirements and engineering now come together in the work at <Company href="https://ncaremd.com/">nCare</Company>.</>;
   }
 }
 

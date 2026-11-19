@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { ArrowDown } from "lucide-react";
 import HeroAtmosphere from "./HeroAtmosphere";
 import StorySculpture from "./StorySculpture";
 import styles from "./HeroProfile.module.css";
@@ -14,19 +13,19 @@ export default function HeroProfile({ reducedMotion }: { reducedMotion: boolean 
     <section className={styles.hero} id="start" aria-labelledby="intro-title">
       <HeroAtmosphere reducedMotion={reducedMotion || heroReady} />
       <div className={`${styles.overview} profile-overview`}>
+        <h1 className={styles.name} id="intro-title"><span>Sharath</span>{" "}<span>Kulkarni.</span></h1>
         <div className={`${styles.composition} portrait-composition`} data-scene="hero" data-sculpture-ready={heroReady}>
           <div className={styles.backdrop} aria-hidden="true" />
           <div className={styles.foundation} aria-hidden="true" />
           <StorySculpture chapter="hero" onReady={setHeroReady} className={styles.portraitScene} />
           <div className={`${styles.portrait} intro-portrait`}>
-            <Image src="/visuals/sharath-cartoon.png" alt="Cartoon portrait of Sharath Kulkarni" fill preload sizes="(max-width: 760px) 64vw, (max-width: 960px) 270px, (max-width: 1100px) 40vw, 470px" />
+            <Image src="/visuals/sharath-cartoon.png" alt="Cartoon portrait of Sharath Kulkarni" fill preload sizes="(max-width: 600px) 72vw, (max-width: 960px) 300px, 430px" />
           </div>
           <span className={styles.connector} data-connector-origin aria-hidden="true" />
         </div>
         <div className={`${styles.copy} introduction-copy`}>
-          <h1 className={styles.name} id="intro-title">Sharath <span>Kulkarni.</span></h1>
-          <p className={styles.bio}>My work sits between healthcare, product and engineering, with a focus on AI and automation. I enjoy the messy part: finding what matters, bringing people together and making ideas work.</p>
-          <a className={styles.explore} href="#operations">Explore my work <ArrowDown size={20} aria-hidden="true" /></a>
+          <p className={styles.headline}>Making healthcare easier to work in.</p>
+          <a className={styles.explore} href="#operations" aria-label="Explore the story"><span className={styles.scrollLine} aria-hidden="true" /><span className={styles.scrollDot} aria-hidden="true" /></a>
         </div>
       </div>
     </section>

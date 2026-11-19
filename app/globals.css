@@ -45,18 +45,23 @@ strong { font-weight: 500; }
 .introduction-copy h1 { font-size: clamp(38px, 4.1vw, 54px); letter-spacing: -1.8px; margin-bottom: 18px; }
 .introduction-copy p { max-width: 580px; font-size: 20px; line-height: 1.5; margin-bottom: 0; }
 .scroll-invitation { display: inline-flex; align-items: center; gap: 10px; margin-top: 18px; text-decoration: none; font-size: 16px; min-height: 44px; pointer-events: auto; }
-.story-detail { margin-top: 6px; }
-.story-detail summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; min-height: 48px; font-size: 17px; text-decoration: underline; text-decoration-color: var(--accent); }
-.story-detail summary::-webkit-details-marker { display: none; }
-.story-detail summary svg { transition: transform .25s; flex-shrink: 0; }
-.story-detail[open] summary svg { transform: rotate(45deg); }
-.story-detail > div { padding-top: 12px; }
-.story-detail p { font-size: 18px; color: var(--quiet); }
-.clients-part h2 { font-size: clamp(38px, 3.7vw, 60px); }
+.problem-part { row-gap: 30px; padding-top: 96px; }
+.problem-heading { position: relative; z-index: 2; grid-column: 1 / -1; max-width: 1040px; pointer-events: auto; }
+.problem-heading h2 { max-width: 23ch; margin-bottom: 0; font-size: clamp(48px, 5.3vw, 76px); line-height: 1.02; letter-spacing: -.045em; }
+.problem-part .story-art { grid-column: 1; grid-row: 2; height: clamp(360px, 50svh, 530px); }
+.problem-part .scene-copy { grid-column: 2; grid-row: 2; max-width: 520px; }
+.building-part { min-height: 94svh; padding-top: 96px; padding-bottom: 112px; }
+.building-part .story-art { height: clamp(470px, 70svh, 720px); }
+.building-part h2 { max-width: 16ch; font-size: clamp(44px, 4.2vw, 64px); }
+.clients-part { display: block; min-height: 94svh; padding-top: 96px; }
+.delivery-copy { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(48px, 8vw, 140px); align-items: start; max-width: none; }
+.delivery-copy h2 { max-width: 13ch; margin-bottom: 0; font-size: clamp(46px, 4.7vw, 70px); }
+.delivery-body { max-width: 640px; }
+.clients-part .story-art { width: 100%; height: clamp(330px, 47svh, 500px); margin-top: 24px; }
 .journey-part { display: flex; gap: 0; flex-direction: column; align-items: center; justify-content: center; min-height: 100svh; padding: 125px 7vw 130px; pointer-events: auto; }
-.journey-intro { width: min(100%, 850px); text-align: center; }
-.journey-intro h2 { margin-bottom: 22px; }
-.journey-intro p { font-size: 20px; margin-bottom: 8px; }
+.journey-intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; gap: clamp(40px, 7vw, 100px); width: min(100%, 1100px); text-align: left; }
+.journey-intro h2 { max-width: 14ch; margin-bottom: 0; font-size: clamp(44px, 4vw, 60px); }
+.journey-intro p { max-width: 480px; font-size: 20px; margin-bottom: 4px; }
 .conversation-close { width: min(100%, 750px); margin-top: 10px; padding-top: 20px; border-top: 1px solid var(--line); text-align: center; }
 .conversation-close p { font-size: 19px; margin: 0 0 10px; }
 .conversation-close > a { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-size: 22px; text-decoration-thickness: 1px; }
@@ -97,13 +102,20 @@ strong { font-weight: 500; }
   .introduction-copy h1 { font-size: clamp(32px, 8.7vw, 42px); line-height: 1.1; letter-spacing: -1.3px; margin-bottom: 16px; }
   .introduction-copy p { font-size: 19px; line-height: 1.5; max-width: 520px; }
   .scroll-invitation { font-size: 16px; margin-top: 14px; }
-  .story-detail summary { font-size: 16px; }
-  .story-detail p { font-size: 18px; }
+  .problem-heading { max-width: 600px; margin-inline: auto; }
+  .problem-heading h2 { max-width: 20ch; font-size: clamp(38px, 8.8vw, 58px); line-height: 1.07; margin-bottom: 22px; }
+  .problem-part .story-art, .building-part .story-art { height: clamp(238px, 64vw, 360px); margin-bottom: 32px; }
+  .building-part h2 { max-width: 18ch; font-size: clamp(38px, 8.8vw, 58px); }
+  .problem-part .scene-copy { max-width: 600px; }
+  .delivery-copy { display: block; max-width: 600px; }
+  .delivery-copy h2 { max-width: 16ch; margin-bottom: 24px; }
+  .clients-part .story-art { height: clamp(248px, 65vw, 380px); margin-top: 28px; margin-bottom: 0; }
   .clients-part h2 { font-size: 38px; }
   .journey-part { padding: 64px max(24px, env(safe-area-inset-right, 0px)) calc(120px + env(safe-area-inset-bottom, 0px)) max(36px, calc(env(safe-area-inset-left, 0px) + 24px)); }
-  .journey-intro { text-align: left; }
+  .journey-intro { display: block; text-align: left; }
   .journey-intro h2 { font-size: 38px; }
-  .journey-intro p { font-size: 19px; }
+  .journey-intro h2 { margin-bottom: 22px; }
+  .journey-intro p { max-width: 600px; font-size: 19px; }
   .conversation-close { margin-top: 20px; padding-top: 20px; text-align: left; }
   .conversation-close p { font-size: 18px; }
   .conversation-close > a { font-size: 20px; }

@@ -12,9 +12,9 @@ import BrandAtmosphere from "./components/BrandAtmosphere";
 
 const chapters = [
   { id: "start", label: "Profile" },
-  { id: "operations", label: "Healthcare AI" },
-  { id: "building", label: "Building today" },
-  { id: "clients", label: "Delivery" },
+  { id: "operations", label: "The problem" },
+  { id: "building", label: "Building" },
+  { id: "clients", label: "In practice" },
   { id: "journey", label: "Background" },
 ];
 
@@ -114,40 +114,44 @@ export default function Home() {
         <SceneMotion reducedMotion={reducedMotion} />
         <StoryThread reducedMotion={reducedMotion} />
         <HeroProfile reducedMotion={reducedMotion} />
-        <section className="story-part story-right" id="operations" aria-labelledby="operations-title">
+        <section className="story-part problem-part" id="operations" aria-labelledby="operations-title">
+          <div className="problem-heading">
+            <h2 id="operations-title">Disconnected systems make healthcare harder.</h2>
+          </div>
           <StoryArt chapter="operations" />
           <div className="scene-copy">
-            <h2 id="operations-title">The work gets lost between systems.</h2>
-            <p>Healthcare practices often run on disconnected systems. Clinical, operational and financial data sit in silos, making it hard to see where work is getting stuck.</p>
-            <p>Missed tasks, delayed collections and lost revenue can stay hidden while teams piece the picture together.</p>
-            <p>At <Company href="https://ncaremd.com/">nCare</Company>, I oversee operations across care programs, revenue cycle and client delivery, including the team building our internal tools. Those everyday gaps shape what gets built next.</p>
+            <p>Patient information, team workloads, follow-up and payments often live in separate systems. Those data silos make it hard to see what’s been missed, what needs attention and where a practice is losing revenue.</p>
+            <p>Healthcare analytics was the starting point. Better reporting made the gaps visible; closing them meant getting closer to the work. At <Company href="https://ncaremd.com/">nCare</Company>, I now oversee operations and the engineering team building our internal tools, connecting operational requirements with product decisions.</p>
           </div>
         </section>
-        <section className="story-part story-left" id="building" aria-labelledby="building-title">
+        <section className="story-part story-left building-part" id="building" aria-labelledby="building-title">
           <StoryArt chapter="building" />
           <div className="scene-copy">
-            <h2 id="building-title">The operation shapes the product.</h2>
-            <p>HEMI, our internal platform, grew out of our own operational challenges. An engineering team, a shared roadmap and desktop and mobile experiences took shape around the needs of the people doing the work.</p>
-            <p>Daily use keeps the work grounded. Feedback sets priorities, showing where AI and automation could help and what still needs a person’s judgment.</p>
+            <h2 id="building-title">Turning operational problems into software.</h2>
+            <p>We built an internal platform for care and practice operations, with desktop and mobile tools. Operational requirements shape the roadmap, from what teams need to see to how work moves between them.</p>
+            <p>Engineering stays close to the operation, so product decisions meet the reality of daily use. That feedback informs each iteration, including where AI and automation could reduce repetitive work and where human judgment matters.</p>
           </div>
         </section>
-        <section className="story-part story-right clients-part" id="clients" aria-labelledby="clients-title">
-          <StoryArt chapter="clients" />
-          <div className="scene-copy">
-            <h2 id="clients-title">It has to work after the demo.</h2>
-            <p>Practices bring their own teams, systems and ways of working. Implementing nCare’s services means working through those differences, then staying close through training and ongoing account management.</p>
+        <section className="story-part clients-part" id="clients" aria-labelledby="clients-title">
+          <div className="scene-copy delivery-copy">
+            <h2 id="clients-title">Implementation is part of the design.</h2>
+            <div className="delivery-body">
+              <p>Care and billing services have to fit around existing systems, staff roles and daily workflows. Implementation brings those constraints into view, giving product and engineering decisions a practical test.</p>
+              <p>Rollout, training and ongoing client conversations reveal where the design and the actual work diverge. Those observations return to the roadmap and the internal tools supporting the teams.</p>
+            </div>
           </div>
+          <StoryArt chapter="clients" />
         </section>
         <section className="story-part journey-part" id="journey" aria-labelledby="journey-title">
           <div className="journey-intro">
-            <h2 id="journey-title">The perspective behind the work.</h2>
-            <p>Earlier work in brand, business and technology still shapes the approach: understand the people, figure out what matters and make the idea useful.</p>
+            <h2 id="journey-title">How the pieces came together.</h2>
+            <p>Brand, business and technology each brought a different way of seeing a problem. That perspective still shapes the work in healthcare today.</p>
           </div>
           <JourneyMap reducedMotion={reducedMotion} />
           <ContactForm />
         </section>
       </main>
-      <nav className="chapter-navigation" aria-label="Explore my current work">
+      <nav className="chapter-navigation" aria-label="Explore the story">
         {chapters.map((chapter, index) => <a key={chapter.id} href={`#${chapter.id}`} aria-current={active === index ? "location" : undefined}><span className="chapter-dot" aria-hidden="true" /><span>{chapter.label}</span></a>)}
       </nav>
       <div className="reading-track" aria-hidden="true"><div className="reading-progress" /></div>

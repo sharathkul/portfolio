@@ -82,6 +82,18 @@
   opacity: 0.42;
 }
 
+.panelMark {
+  stroke: var(--thread);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.panelRule { stroke: var(--slate); stroke-width: 1.5; opacity: .55; }
+.clinicRoof { stroke: var(--thread); stroke-width: 5; stroke-linecap: round; }
+.clinicMark { stroke: var(--thread); stroke-width: 3.5; stroke-linecap: round; }
+.clinicDoor { stroke: var(--thread); stroke-width: .8; }
+
 .folderFront {
   stroke: #3156ce;
   stroke-width: 0.8;
