@@ -3,6 +3,17 @@
 import { useEffect, useRef } from "react";
 import styles from "./BrandAtmosphere.module.css";
 
+// Each stroke runs from a loose fan into the same narrow fold.
+const strokes = Array.from({ length: 24 }, (_, index) => {
+  const t = index / 23;
+  return [
+    `M ${-48 + 7 * index} -10`,
+    `C ${178 + 88 * t} 83, ${260 - 76 * t} 148, ${154 - 18 * t} 222`,
+    `S ${-12 + 102 * t} 320, ${32 + 121 * t} 396`,
+    `S ${222 - 39 * t} 484, ${157 - 132 * t} 562`,
+  ].join(" ");
+});
+
 export default function BrandAtmosphere({ reducedMotion }: { reducedMotion: boolean }) {
   const element = useRef<HTMLDivElement>(null);
 
@@ -89,18 +100,12 @@ export default function BrandAtmosphere({ reducedMotion }: { reducedMotion: bool
 
   return (
     <div ref={element} className={styles.atmosphere} data-brand-atmosphere data-brand-motion="idle" aria-hidden="true">
-      <div className={styles.space}>
-        <div className={`${styles.frame} ${styles.left}`}>
-          <span className={styles.edge} />
-          <span className={styles.face} />
-          <span className={styles.rim} />
-        </div>
-        <div className={`${styles.frame} ${styles.right}`}>
-          <span className={styles.edge} />
-          <span className={styles.face} />
-          <span className={styles.rim} />
-        </div>
-      </div>
+      <svg className={styles.left} viewBox="0 0 260 550" fill="none" focusable="false">
+        {strokes.map(path => <path key={path} d={path} />)}
+      </svg>
+      <svg className={styles.right} viewBox="0 0 260 550" fill="none" focusable="false">
+        {strokes.map(path => <path key={path} d={path} />)}
+      </svg>
     </div>
   );
 }

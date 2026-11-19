@@ -31,7 +31,6 @@ export default function SceneMotion({ reducedMotion }: { reducedMotion: boolean 
   useEffect(() => {
     const story = document.getElementById("story");
     const hero = document.getElementById("start");
-    const atmosphere = hero?.querySelector<HTMLElement>("[data-hero-atmosphere]");
     if (!story || !hero) return;
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
     const scenes: Scene[] = Array.from(story.querySelectorAll<HTMLElement>("[data-scene]"))
@@ -65,7 +64,6 @@ export default function SceneMotion({ reducedMotion }: { reducedMotion: boolean 
         scene.element.style.setProperty("--scene-pointer-x", interaction.x.toFixed(4));
         scene.element.style.setProperty("--scene-pointer-y", interaction.y.toFixed(4));
         scene.element.dispatchEvent(new CustomEvent("scene:progress", { detail: { progress, reducedMotion: reduced, interaction } }));
-        if (isHero && atmosphere) atmosphere.style.setProperty("--hero-depth", reduced ? "0" : progress.toFixed(4));
         if (scene.packet) {
           const t = clamp((progress - .28) / .6);
           const q = 1 - t;

@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
-export type SculptureChapter = "hero" | "operations" | "building" | "clients";
+export type SculptureChapter = "operations" | "building" | "clients";
 export type SculptureInteraction = { x: number; y: number };
 export type StorySculpture = {
   resize(width: number, height: number): void;
@@ -33,20 +33,24 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
   const materials = new Set<THREE.Material>();
   const boxes = new Map<string, THREE.BufferGeometry>();
   const ownGeometry = <T extends THREE.BufferGeometry>(geometry: T): T => { geometries.add(geometry); return geometry; };
-  const physical = (color: number, roughness = .38, extra: THREE.MeshPhysicalMaterialParameters = {}) => {
+  const physical = (color: THREE.ColorRepresentation, roughness = .38, extra: THREE.MeshPhysicalMaterialParameters = {}) => {
     const material = new THREE.MeshPhysicalMaterial({ color, roughness, metalness: .025, clearcoat: .22, clearcoatRoughness: .3, ...extra });
     materials.add(material);
     return material;
   };
+  const theme = getComputedStyle(canvas);
+  const accentColor = theme.getPropertyValue("--accent").trim();
+  const accentShadow = theme.getPropertyValue("--accent-shadow").trim();
+  const accentLight = theme.getPropertyValue("--accent-light").trim();
   const porcelain = physical(0xf8f8f4, .38);
   const paper = physical(0xfffefa, .64);
-  const ice = physical(0xc3d2e9, .46);
-  const blue = physical(0x3156ce, .3, { clearcoat: .45 });
-  const deepBlue = physical(0x243d8d, .38);
+  const ice = physical(0xc5cbd5, .46);
+  const blue = physical(accentColor, .72, { clearcoat: .05 });
+  const deepBlue = physical(accentShadow, .72, { clearcoat: .05 });
   const ink = physical(0x67778e, .52);
-  const glass = physical(0xdce8f8, .18, { clearcoat: .8 });
-  const opticalGlass = physical(0xc9e3f1, .12, { clearcoat: 1, transparent: true, opacity: .58, depthWrite: false });
-  const signal = new THREE.MeshStandardMaterial({ color: 0x5ccbea, emissive: 0x5ccbea, emissiveIntensity: .38, roughness: .28, metalness: .02 });
+  const glass = physical(0xdde1e6, .18, { clearcoat: .8 });
+  const opticalGlass = physical(0xc5cfdf, .12, { clearcoat: 1, transparent: true, opacity: .58, depthWrite: false });
+  const signal = new THREE.MeshStandardMaterial({ color: accentLight, emissive: accentLight, emissiveIntensity: .38, roughness: .28, metalness: .02 });
   materials.add(signal);
 
   function box(parent: THREE.Object3D, size: [number, number, number], position: [number, number, number], material: THREE.Material, radius = .04) {
@@ -94,48 +98,7 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
   }
 
   let animate: (progress: number, reduced: boolean) => void;
-  if (chapter === "hero") {
-    const shape = new THREE.Shape();
-    shape.moveTo(-2.65, -2.3);
-    shape.lineTo(-2.65, 1.24);
-    shape.quadraticCurveTo(-2.65, 2.38, -1.48, 2.38);
-    shape.lineTo(1.48, 2.38);
-    shape.quadraticCurveTo(2.65, 2.38, 2.65, 1.24);
-    shape.lineTo(2.65, -1.5);
-    shape.lineTo(2.34, -1.5);
-    shape.lineTo(2.34, 1.24);
-    shape.quadraticCurveTo(2.34, 2.07, 1.48, 2.07);
-    shape.lineTo(-1.48, 2.07);
-    shape.quadraticCurveTo(-2.34, 2.07, -2.34, 1.24);
-    shape.lineTo(-2.34, -2.3);
-    shape.closePath();
-    const geometry = ownGeometry(new THREE.ExtrudeGeometry(shape, { depth: .26, steps: 1, bevelEnabled: true, bevelSegments: 2, bevelSize: .045, bevelThickness: .035, curveSegments: 14 }));
-    const back = new THREE.Mesh(geometry, deepBlue);
-    back.position.set(.075, .075, -.32);
-    back.castShadow = true;
-    back.receiveShadow = true;
-    model.add(back);
-    const frame = new THREE.Mesh(geometry, porcelain);
-    frame.castShadow = true;
-    frame.receiveShadow = true;
-    model.add(frame);
-    const cobaltEdge = box(model, [.32, 1.0, .31], [-2.495, -1.8, .015], blue, .045);
-    const upperBlade = box(model, [.31, 1.16, .09], [2.62, .92, .31], opticalGlass, .04);
-    upperBlade.rotation.set(.03, -.2, -.12);
-    const lowerBlade = box(model, [.3, .76, .11], [-2.56, -.18, .31], opticalGlass, .035);
-    lowerBlade.rotation.set(-.06, .17, .1);
-    const arcLeft = connector(new THREE.CubicBezierCurve3(new THREE.Vector3(-2.48, -1.42, .34), new THREE.Vector3(-2.83, .12, .34), new THREE.Vector3(-2.55, 2.33, .34), new THREE.Vector3(-1.32, 2.24, .34)), .018, signal);
-    const arcRight = connector(new THREE.QuadraticBezierCurve3(new THREE.Vector3(1.2, 2.25, .34), new THREE.Vector3(2.52, 2.5, .34), new THREE.Vector3(2.49, .28, .34)), .024, blue);
-    animate = progress => {
-      const travel = smooth(progress);
-      upperBlade.position.y = .92 + travel * .1;
-      upperBlade.rotation.y = -.2 + travel * .15;
-      lowerBlade.position.y = -.18 - travel * .1;
-      cobaltEdge.position.y = -1.8 + travel * .05;
-      arcLeft.draw(.62 + progress * .38);
-      arcRight.draw(.58 + progress * .42);
-    };
-  } else if (chapter === "operations") {
+  if (chapter === "operations") {
     const poses = [
       { x: -1.55, z: -.15, turn: -.16, startX: -2.0, lift: .8, tilt: -.16 },
       { x: 0, z: .5, turn: .12, startX: .08, lift: 1.03, tilt: .13 },
@@ -166,7 +129,7 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
       model.add(stack);
       return stack;
     });
-    // The information panel keeps a folded cobalt corner as the shared accent.
+    // The information panel keeps a folded navy corner as the shared accent.
     const accent = box(stacks[1], [.36, .035, .18], [.32, .32, -.5], blue, .025);
     accent.rotation.y = -.15;
     const sourceChannel = connector(new THREE.CubicBezierCurve3(new THREE.Vector3(-1.55, .24, .35), new THREE.Vector3(-1.2, .34, 1.04), new THREE.Vector3(-.4, .34, 1.04), new THREE.Vector3(0, .24, .72)), .022, signal);
@@ -226,7 +189,7 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
 
     const intelligence = new THREE.Group();
     intelligence.position.set(-.75, .95, -.7);
-    const spineSignal = new THREE.MeshStandardMaterial({ color: 0x5ccbea, emissive: 0x5ccbea, emissiveIntensity: .78, roughness: .24, metalness: .02 });
+    const spineSignal = new THREE.MeshStandardMaterial({ color: accentLight, emissive: accentLight, emissiveIntensity: .38, roughness: .24, metalness: .02 });
     materials.add(spineSignal);
     const layerPoses = [
       { x: -.05, z: .055, turn: -.1 },
@@ -340,7 +303,7 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
       curve.v2.clone().add(new THREE.Vector3(0, .014, 0)), curve.v3.clone().add(new THREE.Vector3(0, .014, 0)),
     ), .011, signal));
     const packetPaper = physical(0xfffefa, .6, { transparent: true });
-    const packetAccent = physical(0x3156ce, .35, { transparent: true });
+    const packetAccent = physical(accentColor, .35, { transparent: true });
     const packet = new THREE.Group();
     box(packet, [.35, .065, .43], [0, 0, 0], packetPaper, .025);
     box(packet, [.2, .014, .034], [-.035, .041, -.08], packetAccent, .008);
@@ -374,7 +337,7 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
     };
   }
 
-  const hemisphere = new THREE.HemisphereLight(0xffffff, 0xa8b8d0, 2.3);
+  const hemisphere = new THREE.HemisphereLight(0xffffff, 0xb5bbc6, 2.3);
   scene.add(hemisphere);
   const key = new THREE.DirectionalLight(0xfff8ed, 3.6);
   key.position.set(-3.5, 8, 5.5);
@@ -390,25 +353,23 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
   key.shadow.normalBias = .025;
   key.shadow.radius = 3;
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0x8baaff, 1.05);
+  const rim = new THREE.DirectionalLight(0xe1e5ec, 1.05);
   rim.position.set(4, 3, -4);
   scene.add(rim);
   const shadowMaterial = new THREE.ShadowMaterial({ color: 0x39465f, opacity: .2 });
   materials.add(shadowMaterial);
-  if (chapter !== "hero") {
-    const ground = new THREE.Mesh(ownGeometry(new THREE.PlaneGeometry(30, 30)), shadowMaterial);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -.005;
-    ground.receiveShadow = true;
-    scene.add(ground);
-  }
+  const ground = new THREE.Mesh(ownGeometry(new THREE.PlaneGeometry(30, 30)), shadowMaterial);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -.005;
+  ground.receiveShadow = true;
+  scene.add(ground);
 
   const apply = (progress: number, reduced: boolean, interaction: SculptureInteraction = { x: 0, y: 0 }) => {
     const p = reduced ? 1 : clamp(progress);
     animate(p, reduced);
     const x = reduced ? 0 : Math.max(-.5, Math.min(.5, interaction.x || 0));
     const y = reduced ? 0 : Math.max(-.5, Math.min(.5, interaction.y || 0));
-    model.rotation.y = mix(chapter === "hero" ? -.08 : -.18, chapter === "hero" ? .1 : .16, p) + x * .16;
+    model.rotation.y = mix(-.18, .16, p) + x * .16;
     model.rotation.x = y * -.1;
     model.updateMatrixWorld(true);
   };
@@ -434,7 +395,7 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
   }
   const target = envelope.getCenter(new THREE.Vector3());
   target.y -= (envelope.max.y - envelope.min.y) * .08;
-  const direction = new THREE.Vector3(...(chapter === "hero" ? [.25, .5, 10] : chapter === "building" ? [3.7, 4.7, 9] : chapter === "operations" ? [4.8, 6.8, 8.8] : [4.4, 4.9, 8.6]) as [number, number, number]).normalize();
+  const direction = new THREE.Vector3(...(chapter === "building" ? [3.7, 4.7, 9] : chapter === "operations" ? [4.8, 6.8, 8.8] : [4.4, 4.9, 8.6]) as [number, number, number]).normalize();
   let disposed = false;
   let lastProgress = 1;
   let lastReduced = true;
@@ -452,7 +413,7 @@ export function createStorySculpture(canvas: HTMLCanvasElement, chapter: Sculptu
       camera.updateMatrixWorld(true);
       if (envelopePoints.every(point => {
         projected.copy(point).project(camera);
-        return Math.abs(projected.x) <= .92 && projected.y <= .9 && projected.y >= (chapter === "hero" ? -.8 : -.7);
+        return Math.abs(projected.x) <= .92 && projected.y <= .9 && projected.y >= -.7;
       })) break;
     }
   };

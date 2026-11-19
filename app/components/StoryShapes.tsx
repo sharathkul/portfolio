@@ -1,6 +1,6 @@
 import styles from "./ConnectedStory.module.css";
 
-export type StoryPalette = { paper: string; edge: string; cobalt: string };
+export type StoryPalette = { paper: string; edge: string; accent: string };
 
 export function Paper({ x = 0, y = 0, turn = 0, table = false, tinted = false, palette }: {
   x?: number; y?: number; turn?: number; table?: boolean; tinted?: boolean; palette?: StoryPalette;
@@ -34,7 +34,7 @@ export function Folder({ x, y, turn = 0, palette }: { x: number; y: number; turn
         <path className={styles.tintedPaper} d="M-66-36H-17L-4-23H68V63H-66Z" />
         <path className={styles.paper} fill={palette?.paper} d="M-45-59H46V31H-45Z" />
         <path className={styles.paperMark} d="M-27-37H28M-27-18H19" />
-        <path className={styles.folderFront} fill={palette?.cobalt} d="M-71-7H72L62 67H-62Z" />
+        <path className={styles.folderFront} fill={palette?.accent} d="M-71-7H72L62 67H-62Z" />
         <path className={styles.folderLip} d="M-71-7H72" />
       </g>
     </g>
@@ -62,7 +62,7 @@ export function Engineering({ x, y, palette }: { x: number; y: number; palette?:
     <g transform={`translate(${x} ${y})`}>
       <g transform="matrix(.94 .20 -.22 .76 0 0)">
         <path className={styles.blueEdge} d="M-58-45H58V45H-58Z" transform="translate(5 6)" />
-        <path className={styles.bluePlate} fill={palette?.cobalt} d="M-58-45H58V45H-58Z" />
+        <path className={styles.bluePlate} fill={palette?.accent} d="M-58-45H58V45H-58Z" />
         <g className={styles.codeMark}>
           <path d="m-22-15-15 15 15 15m44-30 15 15-15 15M7-21-7 21" />
         </g>

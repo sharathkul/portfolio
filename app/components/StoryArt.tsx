@@ -28,7 +28,7 @@ function Practice({ x, y, palette }: { x: number; y: number; palette: StoryPalet
       <path className={styles.paper} fill={palette.paper} d="M-27-29H27V30H-27Z" />
       <path className={styles.clinicRoof} d="M-31-29H31" />
       <path className={styles.clinicMark} d="M-11-16V0M-19-8H-3" />
-      <path className={styles.clinicDoor} fill={palette.cobalt} d="M6 7H18V30H6Z" />
+      <path className={styles.clinicDoor} fill={palette.accent} d="M6 7H18V30H6Z" />
     </g>
   );
 }
@@ -39,7 +39,7 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
   const palette: StoryPalette = {
     paper: `url(#${id}-paper)`,
     edge: `url(#${id}-edge)`,
-    cobalt: `url(#${id}-cobalt)`,
+    accent: `url(#${id}-accent)`,
   };
 
   return (
@@ -51,10 +51,10 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
             <stop stopColor="#fffefa" /><stop offset="1" stopColor="#e7e8e6" />
           </linearGradient>
           <linearGradient id={`${id}-edge`} x1="0" y1="-70" x2="0" y2="80" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#e9edf5" /><stop offset=".5" stopColor="#c2ccdf" /><stop offset="1" stopColor="#9daac0" />
+            <stop stopColor="#e9ebed" /><stop offset=".5" stopColor="#c6ccd5" /><stop offset="1" stopColor="#98a3b4" />
           </linearGradient>
-          <linearGradient id={`${id}-cobalt`} x1="-60" y1="-45" x2="80" y2="60" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#6680db" /><stop offset=".5" stopColor="#3156ce" /><stop offset="1" stopColor="#29449a" />
+          <linearGradient id={`${id}-accent`} x1="-60" y1="-45" x2="80" y2="60" gradientUnits="userSpaceOnUse">
+            <stop stopColor="var(--accent-light)" /><stop offset=".5" stopColor="var(--accent)" /><stop offset="1" stopColor="var(--accent-shadow)" />
           </linearGradient>
         </defs>
         <g>
@@ -73,7 +73,7 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
                 <path className={`${motion.branch} ${motion.branchEngineering}`} d="M0 0Q42-34 140-42" pathLength="1" />
                 <path className={`${motion.branch} ${motion.branchProduct}`} d="M0 0Q-2 65-8 82" pathLength="1" />
               </g>
-              <circle className={motion.junction} r="5" fill={palette.cobalt} />
+              <circle className={motion.junction} r="5" fill={palette.accent} />
               <g className={motion.care} data-motion-part="care"><Paper x={-145} y={-42} turn={-8} tinted palette={palette} /></g>
               <g className={motion.engineering} data-motion-part="engineering"><Engineering x={140} y={-42} palette={palette} /></g>
               <g className={motion.product} data-motion-part="product"><Devices x={-8} y={82} palette={palette} /></g>
@@ -90,8 +90,8 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
                 <Practice x={44} y={35} palette={palette} />
               </g></g>
               <g className={motion.packet} data-motion-part="packet" transform="translate(105 24)">
-                <circle r="7" fill="#fffefa" stroke="#3156ce" strokeWidth="2" />
-                <circle r="2.3" fill="#3156ce" />
+                <circle r="7" fill="#fffefa" stroke="var(--accent)" strokeWidth="2" />
+                <circle r="2.3" fill="var(--accent)" />
               </g>
             </>
           )}

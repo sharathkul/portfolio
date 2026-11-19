@@ -1,18 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { SculptureChapter, SculptureInteraction, StorySculpture as Sculpture } from "./createStorySculpture";
 import styles from "./StoryArt.module.css";
 
-type Chapter = "hero" | "operations" | "building" | "clients";
-type Interaction = { x: number; y: number };
-type Sculpture = {
-  resize: (width: number, height: number) => void;
-  update: (progress: number, reducedMotion: boolean, interaction?: Interaction) => void;
-  dispose: () => void;
-};
-type ProgressEvent = CustomEvent<{ progress: number; reducedMotion: boolean; interaction?: Interaction }>;
+type ProgressEvent = CustomEvent<{ progress: number; reducedMotion: boolean; interaction?: SculptureInteraction }>;
 
-export default function StorySculpture({ chapter, onReady, className = "" }: { chapter: Chapter; onReady: (ready: boolean) => void; className?: string }) {
+export default function StorySculpture({ chapter, onReady, className = "" }: { chapter: SculptureChapter; onReady: (ready: boolean) => void; className?: string }) {
   const canvas = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -27,7 +21,7 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
     let visible = false;
     let width = 0;
     let height = 0;
-    let progress = Number(slot.style.getPropertyValue("--scene-progress") || (chapter === "hero" ? 0 : 1));
+    let progress = Number(slot.style.getPropertyValue("--scene-progress") || 1);
     let interaction = { x: 0, y: 0 };
     let reducedMotion = !!slot.closest(".motion-reduced");
 

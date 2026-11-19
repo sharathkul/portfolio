@@ -1,4 +1,4 @@
-:root { --paper: #F4F2EC; --ink: #1C2536; --quiet: #586271; --line: #1C25362E; --accent: #3156CE; --surface: #DAE3F3; }
+:root { --paper: #F4F2EC; --ink: #1C2536; --quiet: #586271; --line: #1C25362E; --accent: #24345a; --accent-shadow: #1c2844; --accent-light: #536689; --surface: #dce0e7; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 html:has(.motion-reduced) { scroll-behavior: auto !important; }

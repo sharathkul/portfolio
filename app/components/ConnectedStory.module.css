@@ -1,8 +1,8 @@
 .scene {
-  --thread: #3156ce;
+  --thread: var(--accent);
   --ink: #1c2536;
   --slate: #586271;
-  --ice: #dae3f3;
+  --ice: var(--surface);
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -66,7 +66,7 @@
 
 .tintedPaper {
   fill: var(--ice);
-  stroke: #b7c5df;
+  stroke: #b8bfcc;
   stroke-width: 1;
 }
 
@@ -95,12 +95,12 @@
 .clinicDoor { stroke: var(--thread); stroke-width: .8; }
 
 .folderFront {
-  stroke: #3156ce;
+  stroke: var(--accent);
   stroke-width: 0.8;
 }
 
 .folderLip {
-  stroke: #a8baf0;
+  stroke: #98a3b8;
   stroke-width: 2;
 }
 
@@ -112,7 +112,7 @@
 .deviceGlass {
   fill: var(--ice);
   fill-opacity: 0.8;
-  stroke: #b4c2db;
+  stroke: #b7bfcd;
   stroke-width: 0.8;
 }
 
@@ -123,13 +123,13 @@
 }
 
 .blueEdge {
-  fill: #29449a;
-  stroke: #8097db;
+  fill: var(--accent-shadow);
+  stroke: var(--accent-light);
   stroke-width: 0.8;
 }
 
 .bluePlate {
-  stroke: #93a9e8;
+  stroke: #8b98b0;
   stroke-width: 1;
 }
 
@@ -154,7 +154,7 @@
 }
 
 .jointBranches path {
-  stroke: #6f8bdd;
+  stroke: var(--accent-light);
   stroke-width: 3;
   stroke-dasharray: 1;
   stroke-dashoffset: inherit;

@@ -1,9 +1,9 @@
 .map {
   --journey-ink: var(--ink, #1c2536);
   --journey-paper: var(--paper, #f4f2ec);
-  --journey-thread: #3156ce;
-  --journey-slate: #586271;
-  --journey-ice: #dae3f3;
+  --journey-thread: var(--accent);
+  --journey-slate: var(--quiet);
+  --journey-ice: var(--surface);
   width: 100%;
   max-width: 1100px;
   color: var(--journey-ink);
@@ -88,13 +88,13 @@
 
 .platformSide {
   fill: var(--journey-ice);
-  stroke: #b9c8e0;
+  stroke: #b7bfca;
   stroke-width: 0.7;
 }
 
 .platformTop {
   fill: var(--journey-paper);
-  stroke: #b9c8e0;
+  stroke: #b7bfca;
   stroke-width: 0.8;
 }
 
