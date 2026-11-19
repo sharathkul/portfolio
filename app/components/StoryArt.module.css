@@ -68,8 +68,8 @@
 }
 
 .plateThread[data-plate-layer="over"] { z-index: 3; }
-.scene:is([data-scene="building"], [data-scene="clients"]) [data-plate-edging] { stroke-opacity: .35; }
-.scene:is([data-scene="building"], [data-scene="clients"]) [data-plate-base] { stroke-opacity: .60; }
+.scene [data-plate-edging] { stroke-opacity: .35; }
+.scene [data-plate-base] { stroke-opacity: .60; }
 .drawing > svg, .sculpture { z-index: 2; }
 
 .drawing > svg {
@@ -78,11 +78,9 @@
   width: 100%;
   height: 100%;
   transition: opacity 180ms ease;
-  transform: perspective(1000px) rotateY(calc(var(--scene-pointer-x, 0) * 8deg)) rotateX(calc(var(--scene-pointer-y, 0) * -6deg));
 }
 
 .scene[data-sculpture-ready="true"] .drawing > svg { opacity: 0; }
-.scene:is([data-scene="building"], [data-scene="clients"]) .drawing > svg { transform: none; }
 
 .sculpture {
   position: absolute;
@@ -133,6 +131,14 @@
 }
 .replay:hover { text-decoration: underline; text-underline-offset: 3px; }
 .replay:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.scene[data-scene="operations"] .sculptureLabels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  padding-block: 2px 0;
+}
+.scene[data-scene="operations"] .replay { grid-column: 1 / -1; justify-self: center; }
+:global(.story-part) .scene[data-scene="operations"] { scroll-margin-top: min(64svh, 575px); }
 .scene[data-scene="clients"] .sculptureLabels { padding-block: 0; gap: 3px; }
 @media (max-width: 960px) {
   :global(.story-part) .scene[data-scene] {
@@ -141,6 +147,11 @@
     min-height: 204px;
   }
   .sculptureLabels { padding-block: 8px; }
+  :global(.story-part) .scene[data-scene="operations"] {
+    --plate-ratio: 1.3;
+    --scene-inset: 2px;
+    min-height: 248px;
+  }
   :global(.story-part) .scene[data-scene="clients"] {
     --plate-ratio: 1.48;
     --scene-inset: 2px;
@@ -152,27 +163,12 @@
   }
 }
 
-.paperLeft,
-.paperRight,
-.paperBottom,
 .care,
 .engineering,
 .product,
 .junction {
   transform-box: fill-box;
   transform-origin: center;
-}
-
-.paperLeft {
-  transform: translate(calc(-32px * var(--gather-rest)), calc(-8px * var(--gather-rest))) rotate(calc(-10deg * var(--gather-rest))) scale(calc(1 - .04 * var(--gather-rest)));
-}
-
-.paperRight {
-  transform: translate(calc(32px * var(--gather-rest)), calc(-12px * var(--gather-rest))) rotate(calc(10deg * var(--gather-rest))) scale(calc(1 - .04 * var(--gather-rest)));
-}
-
-.paperBottom {
-  transform: translate(calc(24px * var(--gather-rest)), calc(-14px * var(--gather-rest))) rotate(calc(8deg * var(--gather-rest))) scale(calc(1 - .06 * var(--gather-rest)));
 }
 
 .care {
@@ -206,11 +202,6 @@
 
 .scene .branchProduct {
   stroke-dashoffset: calc(1 - clamp(0, calc((var(--scene-progress, 1) - .55) / .34), 1));
-}
-
-.scene .operationTrace {
-  stroke-dasharray: 1;
-  stroke-dashoffset: calc(1 - clamp(0, calc((var(--scene-progress, 1) - .24) / .62), 1));
 }
 
 :global(.motion-reduced) .scene {

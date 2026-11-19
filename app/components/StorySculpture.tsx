@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { SculptureChapter, SculptureInteraction, StorySculpture as Sculpture, ThreadProjection } from "./createStorySculpture";
+import { sceneMechanism } from "./plateThread";
 import styles from "./StoryArt.module.css";
 
 type ProgressEvent = CustomEvent<{ progress: number; reducedMotion: boolean; interaction?: SculptureInteraction }>;
@@ -24,31 +25,20 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
     let progress = Number(slot.style.getPropertyValue("--scene-progress") || 1);
     let interaction = { x: 0, y: 0 };
     let reducedMotion = !!slot.closest(".motion-reduced");
-    const mechanism = { building: "bridge", clients: "practice", operations: null }[chapter];
+    const mechanism = sceneMechanism[chapter];
     const progressKey = mechanism + "Progress";
     const projectionKey = mechanism + "Projection";
     const progressEvent = "thread:" + mechanism + "-progress";
-    let previousProjection: string | undefined;
     let previousMechanismProjection: string | undefined;
-    let mechanismProgress = mechanism ? Number(slot.dataset[progressKey] || 0) : 0;
+    let mechanismProgress = Number(slot.dataset[progressKey] || 0);
 
     const shareMechanismProjection = (points: ThreadProjection | null) => {
-      if (!mechanism) return;
       const next = points ? JSON.stringify(points) : undefined;
       if (next === previousMechanismProjection) return;
       previousMechanismProjection = next;
       if (next) slot.dataset[projectionKey] = next;
       else delete slot.dataset[projectionKey];
       slot.dispatchEvent(new CustomEvent("thread:" + mechanism + "-layout", { bubbles: true, detail: points }));
-    };
-
-    const shareProjection = (points: ThreadProjection | null) => {
-      const next = points ? JSON.stringify(points) : undefined;
-      if (next === previousProjection) return;
-      previousProjection = next;
-      if (next) slot.dataset.threadProjection = next;
-      else delete slot.dataset.threadProjection;
-      slot.dispatchEvent(new CustomEvent("thread:projection", { bubbles: true, detail: points }));
     };
 
     const fallback = () => {
@@ -59,7 +49,6 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
       onReady(false);
       slot.dataset.sculptureStatus = "fallback";
       shareMechanismProjection(null);
-      shareProjection(null);
     };
     const paint = () => {
       if (!sculpture || !visible || document.hidden || contextLost) return;
@@ -79,7 +68,7 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
       try {
         const { createStorySculpture } = await import("./createStorySculpture");
         if (disposed || !visible) return;
-        sculpture = createStorySculpture(surface, chapter, shareProjection, shareMechanismProjection);
+        sculpture = createStorySculpture(surface, chapter, shareMechanismProjection);
         sculpture.resize(width, height);
         paint();
       } catch {
@@ -129,7 +118,7 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
       void load();
     };
     slot.addEventListener("scene:progress", onProgress);
-    if (mechanism) slot.addEventListener(progressEvent, onMechanismProgress);
+    slot.addEventListener(progressEvent, onMechanismProgress);
     surface.addEventListener("webglcontextlost", lost);
     surface.addEventListener("webglcontextrestored", restored);
     document.addEventListener("visibilitychange", paint);
@@ -141,13 +130,12 @@ export default function StorySculpture({ chapter, onReady, className = "" }: { c
       intersection.disconnect();
       resize.disconnect();
       slot.removeEventListener("scene:progress", onProgress);
-      if (mechanism) slot.removeEventListener(progressEvent, onMechanismProgress);
+      slot.removeEventListener(progressEvent, onMechanismProgress);
       surface.removeEventListener("webglcontextlost", lost);
       surface.removeEventListener("webglcontextrestored", restored);
       document.removeEventListener("visibilitychange", paint);
       sculpture?.dispose();
       shareMechanismProjection(null);
-      shareProjection(null);
     };
   }, [chapter, onReady]);
 

@@ -116,6 +116,12 @@
   stroke-width: 0.8;
 }
 
+.signalPulse {
+  --signal-travel: clamp(0, calc((var(--scene-progress, 1) - .56) / .34), 1);
+  opacity: clamp(0, calc(var(--signal-travel) * 12), 1);
+  transform: translateX(calc(var(--signal-travel) * 41px));
+}
+
 .deviceStand {
   stroke: #bdc9dd;
   stroke-width: 7;

@@ -118,7 +118,7 @@ export default function Home() {
           <div className="problem-heading">
             <h2 id="operations-title">Disconnected systems make healthcare harder.</h2>
           </div>
-          <StoryArt chapter="operations" />
+          <StoryArt chapter="operations" reducedMotion={reducedMotion} />
           <div className="scene-copy">
             <p>Patient information, follow-up and billing often live in separate systems. People end up doing the connecting. Work gets repeated, priorities get buried and a practice can lose revenue without a clear view of why.</p>
             <p>Healthcare analytics was the starting point. Reporting made the gaps visible; getting closer to operations showed what it would take to close them. At <Company href="https://ncaremd.com/">nCare</Company>, I now oversee operations and the engineering team building our internal tools.</p>

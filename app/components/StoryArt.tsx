@@ -7,28 +7,15 @@ import motion from "./StoryArt.module.css";
 import StorySculpture from "./StorySculpture";
 import TileBridgeFallback from "./TileBridgeFallback";
 import PracticeFolderFallback from "./PracticeFolderFallback";
-import PracticeReplay from "./PracticeReplay";
-
-function OperationPanel({ x, turn, kind, palette }: { x: number; turn: number; kind: "care" | "information" | "payment"; palette: StoryPalette }) {
-  return (
-    <g transform={`translate(${x} 0) rotate(${turn})`}>
-      <g transform="matrix(.94 .20 -.22 .76 0 0)">
-        <path className={styles.paperEdge} fill={palette.edge} d="M-49-64H34L49-49V64H-49Z" transform="translate(4 6)" />
-        <path className={styles.paper} fill={palette.paper} d="M-49-64H34L49-49V64H-49Z" />
-        <path className={styles.fold} d="M34-64v15h15" />
-        {kind === "care" ? <path className={styles.panelMark} d="M-7-28H7V-7H28V7H7V28H-7V7H-28V-7H-7Z" />
-          : kind === "information" ? <g className={styles.panelMark}><path d="M-27-24H26M-27-4H26M-27 16H10" /><path className={styles.panelRule} d="M-27 37H26" /></g>
-            : <g className={styles.panelMark}><circle r="28" /><path d="M9-15C-12-23-21-1 0 1C21 3 12 25-9 17M0-24V25" /></g>}
-      </g>
-    </g>
-  );
-}
+import SceneReplay from "./SceneReplay";
+import PaperRelayFallback from "./PaperRelayFallback";
 
 function SceneThread({ chapter }: { chapter: "operations" | "building" | "clients" }) {
   return (
     <svg className={motion.plateThread} data-plate-layer="over" fill="none"
       preserveAspectRatio="none" aria-hidden="true" focusable="false">
       {chapter === "building" && <defs>{Array.from({ length: 6 }, (_, i) => <path key={i} data-bridge-leg="" />)}</defs>}
+      {chapter === "operations" && <defs>{[0, 1, 2, 3].map(i => <path key={i} data-paper-leg="" />)}</defs>}
       {chapter === "clients" && <defs>{[0, 1, 2, 3].map(i => <path key={i} data-practice-leg="" />)}</defs>}
       <path data-plate-edging="" stroke="var(--paper)" strokeWidth="4" strokeOpacity=".85"
         vectorEffect="non-scaling-stroke" strokeLinecap="round" />
@@ -48,14 +35,14 @@ export default function StoryArt({ chapter, reducedMotion = false }: { chapter: 
   };
 
   return (
-    <div id={{ building: "bridge", clients: "practice-handoff", operations: undefined }[chapter]}
+    <div id={{ building: "bridge", clients: "practice-handoff", operations: "paper-relay" }[chapter]}
       className={`story-art ${motion.scene}`} data-story-art data-scene={chapter} data-sculpture-ready={sculptureReady}
-      aria-hidden={chapter === "clients" ? undefined : true} role={chapter === "clients" ? "group" : undefined}
-      aria-label={chapter === "clients" ? "Practice handoff. A card catches on the folder lip. Its weight pulls the feeder guide back, letting the same card slide through." : undefined}>
+      role={chapter === "building" ? "img" : "group"}
+      aria-label={chapter === "operations" ? "Paper chain reaction. The bead tips Care into Information, which pushes Billing over." : chapter === "clients" ? "Practice handoff. A card catches on the folder lip. Its weight pulls the feeder guide back, letting the same card slide through." : "Two tiles form a bridge. On the chip, three etched traces merge into one signal that travels to the screen."}>
       <div className={motion.plate}>
         <div className={motion.drawing} data-plate-drawing aria-hidden="true">
           <StorySculpture chapter={chapter} onReady={setSculptureReady} />
-          <svg viewBox="-255 -180 510 360" fill="none" focusable="false">
+          <svg viewBox={chapter === "operations" ? "-255 -142 510 284" : "-255 -180 510 360"} fill="none" focusable="false">
             <defs>
               <linearGradient id={`${id}-paper`} x1="-60" y1="-70" x2="65" y2="80" gradientUnits="userSpaceOnUse">
                 <stop stopColor="#fffefa" /><stop offset="1" stopColor="#e7e8e6" />
@@ -69,13 +56,7 @@ export default function StoryArt({ chapter, reducedMotion = false }: { chapter: 
             </defs>
             <g>
               {chapter === "operations" ? (
-                <>
-                  <path className={styles.manualThread} d="M-155 30C-105 106-65 106 0 35C65 106 105 106 155 30" />
-                  <path className={`${styles.localThread} ${motion.operationTrace}`} d="M-155 30C-105 106-65 106 0 35C65 106 105 106 155 30" pathLength="1" />
-                  <g className={motion.paperLeft} data-motion-part="paper-left"><OperationPanel x={-155} turn={-10} kind="care" palette={palette} /></g>
-                  <g className={motion.paperBottom} data-motion-part="paper-bottom"><OperationPanel x={0} turn={3} kind="information" palette={palette} /></g>
-                  <g className={motion.paperRight} data-motion-part="paper-right"><OperationPanel x={155} turn={10} kind="payment" palette={palette} /></g>
-                </>
+                <PaperRelayFallback />
               ) : chapter === "building" ? (
                 <>
                   <g className={styles.jointBranches}>
@@ -96,9 +77,9 @@ export default function StoryArt({ chapter, reducedMotion = false }: { chapter: 
           </svg>
         </div>
         <div className={motion.sculptureLabels} data-story-labels>
-          {chapter === "operations" ? <><span>Care</span><span>Information</span><span>Billing</span></>
-            : chapter === "building" ? <><span>Care teams</span><span>Internal tools</span><span>Engineering</span></>
-              : <><span>Feeder</span>{!reducedMotion && <PracticeReplay />}<span>Practice folder</span></>}
+          {chapter === "operations" ? <><span>Care</span><span>Information</span><span>Billing</span>{!reducedMotion && <SceneReplay sceneName="paper" />}</>
+            : chapter === "building" ? <><span>Care teams</span><span>Product &amp; AI</span><span>Engineering</span></>
+              : <><span>Feeder</span>{!reducedMotion && <SceneReplay sceneName="practice" />}<span>Practice folder</span></>}
         </div>
       </div>
       <SceneThread chapter={chapter} />

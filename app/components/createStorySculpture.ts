@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createTileBridge } from "./createTileBridge";
+import { createPaperRelay } from "./paperRelay";
 import { createPracticeMechanism } from "./practiceMechanism";
 
 export type SculptureChapter = "operations" | "building" | "clients";
@@ -22,7 +23,6 @@ const mix = THREE.MathUtils.lerp;
 export function createStorySculpture(
   canvas: HTMLCanvasElement,
   chapter: SculptureChapter,
-  onProjection: (points: ThreadProjection) => void,
   onMechanismProjection: (points: ThreadProjection) => void,
 ): StorySculpture {
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "low-power" });
@@ -38,17 +38,11 @@ export function createStorySculpture(
   const camera = new THREE.PerspectiveCamera(32, 1.45, .1, 40);
   const model = new THREE.Group();
   scene.add(model);
-  const threadAnchors: THREE.Object3D[] = [];
   const bridgeAnchors: THREE.Object3D[] = [];
   let bridge: ReturnType<typeof createTileBridge> | undefined;
+  let papers: ReturnType<typeof createPaperRelay> | undefined;
   let practice: ReturnType<typeof createPracticeMechanism> | undefined;
   const projectedAnchor = new THREE.Vector3();
-  function anchorThread(object: THREE.Object3D, x: number, y: number, z: number) {
-    const anchor = new THREE.Object3D();
-    anchor.position.set(x, y, z);
-    object.add(anchor);
-    threadAnchors.push(anchor);
-  }
   const geometries = new Set<THREE.BufferGeometry>();
   const materials = new Set<THREE.Material>();
   const boxes = new Map<string, THREE.BufferGeometry>();
@@ -119,54 +113,9 @@ export function createStorySculpture(
 
   let animate: ((progress: number) => void) | undefined;
   if (chapter === "operations") {
-    const poses = [
-      { x: -1.55, z: -.15, turn: -.16, startX: -2.0, lift: .8, tilt: -.16 },
-      { x: 0, z: .5, turn: .12, startX: .08, lift: 1.03, tilt: .13 },
-      { x: 1.55, z: -.2, turn: .22, startX: 2.03, lift: .62, tilt: -.1 },
-    ];
-    const stacks = poses.map((pose, index) => {
-      plinth(pose.x, pose.z, 1.55, 1.62);
-      const stack = pageStack(1.13, 1.4, index === 1 ? 4 : 3, index === 1);
-      if (index === 0) {
-        // A care symbol makes the first physical panel legible before its label.
-        box(stack, [.12, .025, .63], [0, .235, 0], blue, .025);
-        box(stack, [.63, .025, .12], [0, .235, 0], blue, .025);
-      } else if (index === 2) {
-        const ring = new THREE.Mesh(ownGeometry(new THREE.TorusGeometry(.31, .022, 6, 28)), blue);
-        ring.rotation.x = Math.PI / 2;
-        ring.position.y = .24;
-        stack.add(ring);
-        const currencyCurve = new THREE.CatmullRomCurve3([
-          new THREE.Vector3(.08, .25, -.16), new THREE.Vector3(-.06, .25, -.17),
-          new THREE.Vector3(-.12, .25, -.08), new THREE.Vector3(-.035, .25, -.015),
-          new THREE.Vector3(.095, .25, .05), new THREE.Vector3(.1, .25, .13),
-          new THREE.Vector3(-.02, .25, .18), new THREE.Vector3(-.1, .25, .15),
-        ]);
-        const currency = new THREE.Mesh(ownGeometry(new THREE.TubeGeometry(currencyCurve, 22, .018, 5, false)), blue);
-        stack.add(currency);
-        box(stack, [.025, .025, .44], [0, .25, 0], blue, .008);
-      }
-      model.add(stack);
-      return stack;
-    });
-    // The information panel keeps a folded navy corner as the shared accent.
-    const accent = box(stacks[1], [.36, .035, .18], [.32, .32, -.5], blue, .025);
-    accent.rotation.y = -.15;
-    anchorThread(stacks[0], -.48, .20, .28);
-    anchorThread(stacks[1], -.08, .265, .46);
-    anchorThread(stacks[2], .48, .20, .15);
-    const sourceChannel = connector(new THREE.CubicBezierCurve3(new THREE.Vector3(-1.55, .24, .35), new THREE.Vector3(-1.2, .34, 1.04), new THREE.Vector3(-.4, .34, 1.04), new THREE.Vector3(0, .24, .72)), .022, signal);
-    const workingChannel = connector(new THREE.CubicBezierCurve3(new THREE.Vector3(1.55, .24, .3), new THREE.Vector3(1.2, .34, .97), new THREE.Vector3(.4, .34, .97), new THREE.Vector3(0, .24, .72)), .03, blue);
-    animate = progress => {
-      stacks.forEach((stack, index) => {
-        const amount = smooth(phase(progress, index * .08, .76 + index * .08));
-        const pose = poses[index];
-        stack.position.set(mix(pose.startX, pose.x, amount), .195 + pose.lift * (1 - amount), mix(pose.z + .25, pose.z, amount));
-        stack.rotation.set(pose.tilt * (1 - amount), pose.turn + (1 - amount) * (index % 2 ? .25 : -.25), (1 - amount) * (index % 2 ? .12 : -.12));
-      });
-      sourceChannel.draw(phase(progress, .2, .76));
-      workingChannel.draw(phase(progress, .34, .9));
-    };
+    const reverse = physical(0x435775, .86, { clearcoat: 0 });
+    papers = createPaperRelay({ box, ownGeometry, paper, reverse, edge: ink, ink: deepBlue, pale: porcelain });
+    model.add(papers.group);
   } else if (chapter === "building") {
     const slate = physical(0x475b74, .57, { clearcoat: .08 });
     const metal = physical(0xc0b9a8, .47, { metalness: .28 });
@@ -200,14 +149,43 @@ export function createStorySculpture(
     }
     model.add(engineering);
 
+    // Print one circuit on both surfaces. Its three inputs curve into a
+    // common junction, so the chip and the monitor read as the same signal.
+    const outputFinish = physical(0x548783, .49, { emissive: 0x548783, emissiveIntensity: .18, clearcoat: .10 });
+    const inference = new THREE.Group();
+    const pad = ownGeometry(new THREE.CylinderGeometry(.036, .036, .012, 12));
+    pad.rotateX(Math.PI / 2);
+    for (const row of [-.20, 0, .20]) {
+      const start = new THREE.Vector3(-.39, row, 0);
+      const junction = new THREE.Vector3(.105, 0, 0);
+      const line = new THREE.CubicBezierCurve3(start,
+        new THREE.Vector3(-.13, row, 0), new THREE.Vector3(-.105, 0, 0), junction);
+      inference.add(new THREE.Mesh(ownGeometry(new THREE.TubeGeometry(line, 16, .017, 6, false)), row === 0 ? deepBlue : slate));
+      const port = new THREE.Mesh(pad, deepBlue);
+      port.position.copy(start);
+      inference.add(port);
+    }
+    box(inference, [.27, .042, .018], [.235, 0, 0], deepBlue, .009);
+    const seal = new THREE.Mesh(ownGeometry(new THREE.RingGeometry(.046, .068, 24)), deepBlue);
+    seal.position.set(.40, 0, .011);
+    inference.add(seal);
+    const outputPad = new THREE.Mesh(pad, outputFinish);
+    outputPad.position.set(.40, 0, .008);
+    inference.add(outputPad);
+
     const product = new THREE.Group();
     box(product, [1.2, .085, .43], [0, .05, .05], porcelain, .04);
     box(product, [.12, .4, .14], [0, .29, -.02], ice, .035);
     box(product, [1.48, .99, .15], [0, .94, -.02], deepBlue, .075);
     box(product, [1.31, .81, .03], [0, .96, .07], glass, .035);
-    for (let index = 0; index < 3; index++) {
-      box(product, [index === 2 ? .58 : .92, .035, .014], [-.12, 1.18 - index * .18, .095], index === 0 ? blue : porcelain, .012);
-    }
+    const screenPrint = inference.clone();
+    screenPrint.position.set(-.015, .96, .096);
+    screenPrint.scale.set(1.24, 1.28, 1);
+    product.add(screenPrint);
+    const inlet = new THREE.Mesh(ownGeometry(new THREE.TorusGeometry(.061, .013, 6, 18)), slate);
+    inlet.rotation.x = -Math.PI / 2;
+    inlet.position.set(-.49, .104, .19);
+    product.add(inlet);
     const phone = new THREE.Group();
     box(phone, [.43, .79, .11], [0, .43, 0], deepBlue, .06);
     box(phone, [.34, .65, .025], [0, .44, .066], glass, .035);
@@ -216,9 +194,6 @@ export function createStorySculpture(
     phone.rotation.y = -.12;
     product.add(phone);
     model.add(product);
-    anchorThread(care, -.42, .20, .20);
-    anchorThread(product, -.20, .52, .067);
-    anchorThread(engineering, .58, .48, .14);
     // Fixed guides describe the upright face and the surface of the landed
     // deck. Rotating a leaf must never move the thread that drives it.
     for (const point of [bridge.contactPoint(0), bridge.bridgeEntry(0), bridge.bridgeExit(0)]) {
@@ -228,7 +203,10 @@ export function createStorySculpture(
       bridge.group.add(anchor);
       bridgeAnchors.push(anchor);
     }
-    bridgeAnchors.push(threadAnchors[1]);
+    const screenPort = new THREE.Object3D();
+    screenPort.position.set(-.20, .52, .067);
+    product.add(screenPort);
+    bridgeAnchors.push(screenPort);
 
     const intelligence = new THREE.Group();
     intelligence.position.set(-.75, .95, -.7);
@@ -247,6 +225,11 @@ export function createStorySculpture(
       intelligence.add(layer);
       return { layer, trace };
     });
+    const cap = intelligenceLayers[2].layer;
+    box(cap, [.95, .015, .65], [0, .110, 0], porcelain, .007);
+    inference.rotation.x = -Math.PI / 2;
+    inference.position.y = .124;
+    cap.add(inference);
     // Alternating perimeter folds leave the center open between the plates.
     // The luminous inner rail describes a single finite assembly sequence.
     const ribPoints = [
@@ -271,7 +254,18 @@ export function createStorySculpture(
     const hub = new THREE.Vector3(-.75, .48, -.52);
     const careLink = connector(new THREE.QuadraticBezierCurve3(new THREE.Vector3(-1.75, .25, -.25), new THREE.Vector3(-1.45, .7, -.2), hub));
     const engineeringLink = connector(new THREE.QuadraticBezierCurve3(new THREE.Vector3(1.75, .25, -.25), new THREE.Vector3(.2, .78, -.58), hub));
-    const productSignal = connector(new THREE.CubicBezierCurve3(hub, new THREE.Vector3(-.75, .65, .2), new THREE.Vector3(.76, .65, .3), new THREE.Vector3(.76, .29, .51)), .018, signal);
+    // Take the existing feed around the visible left edge of the monitor
+    // foot. Its terminal is the ferrule on the fully assembled stand.
+    const portAtRest = inlet.position.clone().multiplyScalar(1.35)
+      .applyAxisAngle(new THREE.Vector3(0, 1, 0), .02).add(new THREE.Vector3(.76, .21, .51));
+    portAtRest.y += .014;
+    const feed = new THREE.CubicBezierCurve3(hub, new THREE.Vector3(-.99, .63, .30),
+      new THREE.Vector3(-.44, portAtRest.y, portAtRest.z), portAtRest);
+    const productSignal = connector(feed, .024, ink);
+    const pulse = new THREE.Mesh(ownGeometry(new THREE.SphereGeometry(.054, 16, 10)), outputFinish);
+    const pulseAxis = new THREE.Vector3(0, 1, 0);
+    const tangent = new THREE.Vector3();
+    model.add(pulse);
     animate = progress => {
       const gathering = smooth(phase(progress, .04, .55));
       care.position.set(mix(-2.05, -1.8, gathering), mix(.65, .195, gathering), -.38);
@@ -289,7 +283,17 @@ export function createStorySculpture(
       });
       ribs.forEach((rib, index) => rib.geometry.setDrawRange(0, Math.floor(rib.count * phase(progress, .14 + index * .13, .57 + index * .13) / 6) * 6));
       intelligence.rotation.y = mix(-.13, .04, gathering);
-      productSignal.draw(phase(progress, .5, .9));
+      productSignal.draw(phase(progress, .46, .80));
+      const travel = phase(progress, .56, .90);
+      pulse.visible = travel > 0;
+      if (pulse.visible) {
+        const distance = smooth(travel);
+        feed.getPointAt(distance, pulse.position);
+        pulse.quaternion.setFromUnitVectors(pulseAxis, feed.getTangentAt(distance, tangent));
+        const emerge = smooth(phase(travel, 0, .08));
+        const landed = smooth(phase(travel, .84, 1));
+        pulse.scale.set(emerge, emerge * mix(1.95, .90, landed), emerge);
+      }
       const rise = smooth(phase(progress, .38, .92));
       product.position.set(.76, mix(.02, .21, rise), .51);
       product.rotation.y = mix(-.15, .02, rise);
@@ -329,10 +333,11 @@ export function createStorySculpture(
   ground.receiveShadow = true;
   scene.add(ground);
 
+  const fixedMechanism = papers ?? practice;
   const apply = (progress: number, reduced: boolean, interaction: SculptureInteraction = { x: 0, y: 0 }) => {
     const p = reduced ? 1 : clamp(progress);
-    if (practice) {
-      // Keep the feeder and its receiving lip in register as the card catches.
+    if (fixedMechanism) {
+      // The thread strikes this mechanism at a fixed point on the model.
       model.updateMatrixWorld(true);
       return;
     }
@@ -348,15 +353,15 @@ export function createStorySculpture(
   // do not clip a raised document or a folder during a scroll transition.
   const envelope = new THREE.Box3();
   const envelopePoints: THREE.Vector3[] = [];
-  const samples = practice ? [0, .22, .40, .48, .69, .9, 1] : [0, .25, .5, .75, 1];
+  const samples = papers ? [0, .22, .43, .62, .64, .76, .88, 1] : practice ? [0, .22, .40, .48, .69, .9, 1] : [0, .25, .5, .75, 1];
   const poses = samples.map(progress => ({ progress, interaction: { x: 0, y: 0 } }));
-  if (!practice) {
+  if (!fixedMechanism) {
     for (const progress of [0, .5, 1]) for (const x of [-.5, .5]) for (const y of [-.5, .5]) {
       poses.push({ progress, interaction: { x, y } });
     }
   }
   for (const pose of poses) {
-    practice?.update(pose.progress);
+    fixedMechanism?.update(pose.progress);
     bridge?.update(pose.progress);
     apply(pose.progress, false, pose.interaction);
     envelope.union(new THREE.Box3().setFromObject(model));
@@ -372,7 +377,7 @@ export function createStorySculpture(
   }
   const target = envelope.getCenter(new THREE.Vector3());
   target.y -= (envelope.max.y - envelope.min.y) * .08;
-  const direction = new THREE.Vector3(...(chapter === "building" ? [3.7, 4.7, 9] : chapter === "operations" ? [4.8, 6.8, 8.8] : [1.8, 5.7, 10]) as [number, number, number]).normalize();
+  const direction = new THREE.Vector3(...(chapter === "building" ? [3.7, 4.7, 9] : chapter === "operations" ? [-5.1, 4.9, 8] : [1.8, 5.7, 10]) as [number, number, number]).normalize();
   let disposed = false;
   let lastWidth = 0;
   let lastHeight = 0;
@@ -402,12 +407,10 @@ export function createStorySculpture(
       anchors[0] = project(hit.localToWorld(projectedAnchor.set(0, contactLift, 0)));
       onMechanismProjection(anchors);
     }
-    if (practice) {
-      const { group, triggerSurface, trackExitWaypoint } = practice;
+    if (fixedMechanism) {
+      const { group, triggerSurface, trackExitWaypoint } = fixedMechanism;
       onMechanismProjection([triggerSurface, trackExitWaypoint].map(point =>
         project(group.localToWorld(projectedAnchor.copy(point)))));
-    } else {
-      onProjection(threadAnchors.map(anchor => project(projectedAnchor.setFromMatrixPosition(anchor.matrixWorld))));
     }
   };
   const fitCamera = () => {
@@ -419,11 +422,11 @@ export function createStorySculpture(
       camera.updateMatrixWorld(true);
       if (envelopePoints.every(point => {
         projected.copy(point).project(camera);
-        return Math.abs(projected.x) <= .92 && projected.y <= .9 && projected.y >= (practice || bridge ? -.84 : -.7);
+        return Math.abs(projected.x) <= .92 && projected.y <= .9 && projected.y >= (fixedMechanism || bridge ? -.84 : -.7);
       })) break;
     }
   };
-  const mechanism = practice || bridge;
+  const mechanism = fixedMechanism ?? bridge;
   mechanism?.update(1);
   apply(1, true);
 
@@ -450,7 +453,7 @@ export function createStorySculpture(
     update(progress, reducedMotion, interaction, mechanismProgress = 0) {
       if (disposed) return;
       const changed = mechanism?.update(reducedMotion ? 1 : clamp(mechanismProgress));
-      if (practice) {
+      if (fixedMechanism) {
         if (changed) renderer.render(scene, camera);
         return;
       }

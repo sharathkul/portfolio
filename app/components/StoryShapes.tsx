@@ -48,6 +48,17 @@ export function Devices({ x, y, palette }: { x: number; y: number; palette?: Sto
         <path className={styles.deviceEdge} fill={palette?.edge} d="M-81-63H66V30H-81Z" transform="translate(5 5)" />
         <rect className={styles.deviceFace} fill={palette?.paper} x="-81" y="-63" width="147" height="93" rx="5" />
         <rect className={styles.deviceGlass} x="-72" y="-54" width="129" height="72" rx="1" />
+        <g data-signal-panel="" fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <g strokeWidth="2.7">
+            <path d="M-59-36H-41Q-38-36-35-33L-23-21Q-20-18-16-18H-8" stroke="#526583" />
+            <path d="M-59-18H-8" stroke="#364b6a" />
+            <path d="M-59 0H-41Q-38 0-35-3L-23-15Q-20-18-16-18H-8" stroke="#76889c" />
+          </g>
+          <path d="M-8-18H33" stroke="#647b88" strokeWidth="3" />
+          <circle cx="33" cy="-18" r="4.5" fill="#e1e6e8" stroke="#5f7681" strokeWidth="1.7" />
+          <circle className={styles.signalPulse} data-signal-pulse="" cx="-8" cy="-18" r="4.4"
+            fill="#548783" stroke="#eef2ed" strokeWidth="1.25" />
+        </g>
         <path className={styles.deviceStand} d="M-13 31v23m-34 4h67" />
         <path className={styles.deviceEdge} fill={palette?.edge} d="M42-24H89V63H42Z" transform="translate(4 4)" />
         <rect className={styles.deviceFace} fill={palette?.paper} x="42" y="-24" width="47" height="87" rx="7" />
