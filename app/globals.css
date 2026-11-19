@@ -31,6 +31,20 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 .story-left .story-art { grid-column: 2; grid-row: 1; }
 .story-left .scene-copy { grid-column: 1; grid-row: 1; }
 .scene-copy { width: 100%; max-width: 590px; pointer-events: auto; position: relative; z-index: 2; }
+/* Leave a margin of unprinted paper around the words as the drawing passes. */
+:is(.scene-copy, .problem-heading, .introduction-copy, .journey-intro) {
+  position: relative;
+  isolation: isolate;
+}
+:is(.scene-copy, .problem-heading, .introduction-copy, .journey-intro)::before {
+  content: "";
+  position: absolute;
+  inset: -5px -9px;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--paper);
+  box-shadow: 0 0 16px 10px var(--paper);
+}
 h1, h2 { font-family: var(--font-display), sans-serif; font-weight: 550; font-variation-settings: "wdth" 102; font-size: clamp(38px, 4vw, 64px); line-height: 1.06; letter-spacing: -2.3px; margin: 0 0 28px; text-wrap: balance; }
 h2 { font-size: clamp(38px, 3.5vw, 56px); line-height: 1.08; }
 p { font-size: clamp(19px, 1.5vw, 22px); line-height: 1.55; margin: 0 0 20px; }

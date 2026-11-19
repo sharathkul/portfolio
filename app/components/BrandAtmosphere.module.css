@@ -80,6 +80,7 @@
 }
 
 .startDot, .endpoints { fill: var(--paper); }
+.network { opacity: min(1, calc(var(--paper-branches) * 5)); }
 .network > path {
   stroke-dasharray: 1;
   stroke-dashoffset: calc(1 - var(--paper-branches));
