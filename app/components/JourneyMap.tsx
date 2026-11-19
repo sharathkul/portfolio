@@ -50,7 +50,7 @@ function Detail({ selected }: { selected: number }) {
     case 4:
       return <>Reporting, analytics and healthcare operations at <Company href="https://www.thenephrologygroupinc.com/">The Nephrology Group</Company> since 2023.</>;
     default:
-      return <>I now oversee operations at <Company href="https://ncaremd.com/">nCare</Company>, connecting care delivery, revenue cycle, product development and engineering.</>;
+      return <>Care delivery, revenue cycle, product development and engineering now meet in day-to-day operations at <Company href="https://ncaremd.com/">nCare</Company>.</>;
   }
 }
 

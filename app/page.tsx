@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowUpRight, Plus, Pause, Play } from "lucide-react";
+import { ArrowUpRight, Pause, Play } from "lucide-react";
 import JourneyMap from "./components/JourneyMap";
 import StoryArt from "./components/StoryArt";
 import StoryThread from "./components/StoryThread";
@@ -21,10 +21,6 @@ const chapters = [
 function Company({ href, children }: { href: string; children: ReactNode }) {
   return <a className="company-link" href={href} target="_blank" rel="noopener noreferrer">{children}<ArrowUpRight size={16} aria-hidden="true" /></a>;
 }
-function More({ children, label }: { children: ReactNode; label: string }) {
-  return <details className="story-detail"><summary>{label}<Plus size={19} aria-hidden="true" /></summary><div>{children}</div></details>;
-}
-
 export default function Home() {
   const root = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
@@ -121,37 +117,31 @@ export default function Home() {
         <section className="story-part story-right" id="operations" aria-labelledby="operations-title">
           <StoryArt chapter="operations" />
           <div className="scene-copy">
-            <h2 id="operations-title">Healthcare’s fragmentation has a cost.</h2>
-            <p>Healthcare practices often run on disconnected systems. Clinical, operational and financial data sit in silos, making it hard to see where care, performance and revenue are falling short.</p>
-            <p>Without that visibility, teams spend time piecing information together while missed work, delayed collections and lost revenue go unnoticed.</p>
-            <p>At <Company href="https://ncaremd.com/">nCare</Company>, I oversee operations across care programs, revenue cycle and client delivery, alongside the team building our internal tools. The aim is clearer visibility and less work spent moving information between systems.</p>
+            <h2 id="operations-title">The work gets lost between systems.</h2>
+            <p>Healthcare practices often run on disconnected systems. Clinical, operational and financial data sit in silos, making it hard to see where work is getting stuck.</p>
+            <p>Missed tasks, delayed collections and lost revenue can stay hidden while teams piece the picture together.</p>
+            <p>At <Company href="https://ncaremd.com/">nCare</Company>, I oversee operations across care programs, revenue cycle and client delivery, including the team building our internal tools. Those everyday gaps shape what gets built next.</p>
           </div>
         </section>
         <section className="story-part story-left" id="building" aria-labelledby="building-title">
           <StoryArt chapter="building" />
           <div className="scene-copy">
-            <h2 id="building-title">Building from inside the operation.</h2>
-            <p>HEMI is our internal platform for day-to-day work. I built the engineering team behind it and work across the roadmap, workflows and desktop and mobile experiences.</p>
-            <p>Daily operations shape what we build, where automation fits and what needs a person’s judgment. I stay involved through implementation and adoption, so product decisions stay connected to how teams use the tools.</p>
-            <More label="Behind the work">
-              <p>I oversee care management, remote patient monitoring, principal care management and revenue cycle operations. That includes coordinating the teams delivering the services and the engineers building the tools behind them.</p>
-            </More>
+            <h2 id="building-title">The operation shapes the product.</h2>
+            <p>HEMI, our internal platform, grew out of our own operational challenges. An engineering team, a shared roadmap and desktop and mobile experiences took shape around the needs of the people doing the work.</p>
+            <p>Daily use keeps the work grounded. Feedback sets priorities, showing where AI and automation could help and what still needs a person’s judgment.</p>
           </div>
         </section>
         <section className="story-part story-right clients-part" id="clients" aria-labelledby="clients-title">
           <StoryArt chapter="clients" />
           <div className="scene-copy">
             <h2 id="clients-title">It has to work after the demo.</h2>
-            <p>I stay involved with practices using nCare’s services, from demos and implementation through training and ongoing account management. What we build has to hold up for the people delivering it and the clients relying on it.</p>
-            <More label="Delivery and communication">
-              <p>I’ve led MSO and revenue cycle implementations for four external client organizations. I also oversee nCare’s brand and website work, keeping how we present the services connected to what our teams deliver.</p>
-            </More>
+            <p>Practices bring their own teams, systems and ways of working. Implementing nCare’s services means working through those differences, then staying close through training and ongoing account management.</p>
           </div>
         </section>
         <section className="story-part journey-part" id="journey" aria-labelledby="journey-title">
           <div className="journey-intro">
-            <h2 id="journey-title">The experience behind the work.</h2>
-            <p>Earlier work in brand, business and technology still shapes how I approach healthcare, product and operations today.</p>
+            <h2 id="journey-title">The perspective behind the work.</h2>
+            <p>Earlier work in brand, business and technology still shapes the approach: understand the people, figure out what matters and make the idea useful.</p>
           </div>
           <JourneyMap reducedMotion={reducedMotion} />
           <ContactForm />

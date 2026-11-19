@@ -25,7 +25,7 @@ export default function HeroProfile({ reducedMotion }: { reducedMotion: boolean 
         </div>
         <div className={`${styles.copy} introduction-copy`}>
           <h1 className={styles.name} id="intro-title">Sharath <span>Kulkarni.</span></h1>
-          <p className={styles.bio}>I work across healthcare, product and engineering, with a focus on AI and automation. I start with how people work, where things get stuck and what better tools could change.</p>
+          <p className={styles.bio}>My work sits between healthcare, product and engineering, with a focus on AI and automation. I enjoy the messy part: finding what matters, bringing people together and making ideas work.</p>
           <a className={styles.explore} href="#operations">Explore my work <ArrowDown size={20} aria-hidden="true" /></a>
         </div>
       </div>
