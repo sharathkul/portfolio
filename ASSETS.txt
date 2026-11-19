@@ -1,7 +1,7 @@
 Portfolio visuals
 
 visuals/sharath-cartoon.png
-Exact cartoon portrait selected by Sharath: exec-63b83057-9591-4248-9b06-fa64a2b9e23a.png. Generated with the built-in image tool from his supplied profile.jpg, using an original character design. Source pixels are preserved unchanged. The hero uses a CSS edge mask to blend its cream canvas and lower shoulder edge into the page without filtering or regenerating the face. Displayed once. Original photograph profile.jpg is retained but is not displayed.
+Sharath selected exec-63b83057-9591-4248-9b06-fa64a2b9e23a.png, an original cartoon portrait generated from his supplied profile.jpg. The hero mounts the illustration in a paper frame. The portrait appears once.
 
 ConnectedStory and JourneyMap
 Original code-native SVG illustrations created for this portfolio. The line follows the narrative from operating context through fragmented work, team and product building, client delivery, and career history. The diagrams are conceptual illustrations of the supplied experience, not screenshots, patient information, or measured results.

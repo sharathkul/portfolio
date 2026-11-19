@@ -1,42 +1,107 @@
 .atmosphere {
-  --brand-pointer-x: 0;
-  --brand-pointer-y: 0;
+  --paper-split: 0;
+  --paper-register: 0;
+  --paper-branches: 0;
+  --paper-settle: 0;
+  --paper-progress: 0;
+  --paper-pointer-x: 0;
+  --paper-pointer-y: 0;
   position: fixed;
   inset: 0;
   z-index: 1;
   overflow: hidden;
   pointer-events: none;
-  color: var(--accent);
-  mask-image: linear-gradient(90deg, #000 0%, #000 3%, transparent 8%, transparent 92%, #000 97%);
+  user-select: none;
 }
 
-.left, .right {
+.stage {
   position: absolute;
-  height: clamp(270px, 47vh, 520px);
-  width: auto;
+  inset: 0;
+  perspective: 1550px;
+  perspective-origin: 50% 50%;
+  /* The plates carry the foreground story. This larger drawing lives in the paper. */
+  opacity: calc(.57 + var(--paper-register) * .12 - var(--paper-settle) * .38);
+}
+
+.spread {
+  position: absolute;
+  top: 62%;
+  left: 50%;
+  display: flex;
+  width: clamp(680px, 96vw, 1640px);
+  height: clamp(260px, 32vw, 520px);
+  transform-style: preserve-3d;
+  transform: translate(-50%, -50%)
+    translate3d(calc(var(--paper-pointer-x) * 7px), calc(var(--paper-settle) * 12vh), 0)
+    rotateX(calc(51deg - var(--paper-register) * 17deg + var(--paper-settle) * 15deg - var(--paper-pointer-y) * 3deg))
+    rotateY(calc(-7deg + var(--paper-pointer-x) * 4deg))
+    rotateZ(calc(-12deg + var(--paper-register) * 11deg));
+}
+
+.leaf {
+  --edge-shift: 0;
+  --stock: #f8f7f1;
+  position: relative;
+  flex: 0 0 33.333333%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  background: linear-gradient(115deg, var(--stock), color-mix(in srgb, var(--stock) 96%, var(--accent)));
+  border: 1px solid rgb(36 52 90 / 10%);
+  box-shadow: 0 2px 0 #ffffff70, 0 7px 14px -11px rgb(28 40 68 / 32%);
+  transform: translate3d(calc(var(--edge-shift) * var(--paper-split) * 14%), calc(var(--edge-shift) * var(--paper-split) * -13%), 0)
+    rotateZ(calc(var(--edge-shift) * var(--paper-split) * 8deg))
+    rotateY(calc(var(--edge-shift) * (1 - var(--paper-register)) * 17deg));
+}
+
+.leaf:first-child {
+  --edge-shift: -1;
+  --stock: #eaeae4;
+  transform-origin: right center;
+}
+
+.leaf:last-child {
+  --edge-shift: 1;
+  --stock: #eeede8;
+  transform-origin: left center;
+}
+
+.drawing {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   fill: none;
-  stroke: currentColor;
-  stroke-width: 1.1;
-  opacity: .28;
-  transition: transform 280ms ease-out;
+  stroke: var(--accent-light);
+  stroke-width: 1.35px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: calc(.06 + var(--paper-split) * .25 + var(--paper-register) * .35);
 }
 
-.left {
-  top: 15%;
-  left: clamp(-135px, -6vw, -60px);
-  transform: translate(calc(var(--brand-pointer-x) * 10px), calc(var(--brand-pointer-y) * 8px)) rotate(-14deg);
+.startDot, .endpoints { fill: var(--paper); }
+.network > path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--paper-branches));
+}
+.endpoints { opacity: var(--paper-branches); }
+
+.atmosphere[data-finish="pressed"] .leaf {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.atmosphere[data-finish="pressed"] .stage { opacity: calc(.6 - var(--paper-settle) * .26); }
+
+@media (max-width: 700px) {
+  .stage { opacity: calc(.44 + var(--paper-register) * .1 - var(--paper-settle) * .28); }
+  .spread {
+    top: 61%;
+    width: calc(112vw - var(--paper-branches) * 16vw);
+    height: clamp(186px, 48vw, 280px);
+  }
 }
 
-.right {
-  bottom: 4%;
-  right: clamp(-115px, -5.5vw, -58px);
-  transform: translate(calc(var(--brand-pointer-x) * -10px), calc(var(--brand-pointer-y) * -8px)) rotate(163deg);
-}
-
-@media (max-width: 960px) {
+@media (forced-colors: active) {
   .atmosphere { display: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .left, .right { transition: none; }
 }

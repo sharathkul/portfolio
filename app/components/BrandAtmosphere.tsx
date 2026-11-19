@@ -1,111 +1,149 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import PaperRelief from "./PaperRelief";
 import styles from "./BrandAtmosphere.module.css";
 
-// Each stroke runs from a loose fan into the same narrow fold.
-const strokes = Array.from({ length: 24 }, (_, index) => {
-  const t = index / 23;
-  return [
-    `M ${-48 + 7 * index} -10`,
-    `C ${178 + 88 * t} 83, ${260 - 76 * t} 148, ${154 - 18 * t} 222`,
-    `S ${-12 + 102 * t} 320, ${32 + 121 * t} 396`,
-    `S ${222 - 39 * t} 484, ${157 - 132 * t} 562`,
-  ].join(" ");
-});
+const chapters = [
+  { id: "start", split: 0, register: 0, branches: 0, settle: 0 },
+  { id: "operations", split: 1, register: 0, branches: 0, settle: 0 },
+  { id: "building", split: 0, register: 1, branches: 0, settle: 0 },
+  { id: "clients", split: 0, register: 1, branches: 1, settle: 0 },
+  { id: "journey", split: 0, register: 1, branches: 1, settle: 1 },
+] as const;
+
+const axes = ["split", "register", "branches", "settle"] as const;
+const seams = [0, 1, 2] as const;
+const mainLine = "M36 144 H105 C143 144 142 101 184 101 H237 C278 101 277 147 318 147 H408 C439 147 441 117 472 117 H556 C588 117 587 144 620 144 H714";
+
+// Print the same drawing across three sheets. Separating the sheets physically
+// breaks the line. Bringing their edges together registers the drawing again.
+function Drawing({ sheet }: { sheet: number }) {
+  return (
+    <svg className={styles.drawing} viewBox={`${sheet * 300} 0 300 240`} preserveAspectRatio="none" focusable="false">
+      <path d={mainLine} className={styles.trace} />
+      {sheet === 0 && <circle cx="36" cy="144" r="4" className={styles.startDot} />}
+      {sheet === 2 && <g className={styles.network}>
+        <path d="M714 144 C748 144 731 55 774 55 H852" pathLength="1" />
+        <path d="M714 144 C750 144 745 109 788 109 H875" pathLength="1" />
+        <path d="M714 144 C750 144 745 161 788 161 H850" pathLength="1" />
+        <path d="M714 144 C748 144 732 207 774 207 H876" pathLength="1" />
+        <g className={styles.endpoints}>
+          <circle cx="852" cy="55" r="4" /><circle cx="875" cy="109" r="4" />
+          <circle cx="850" cy="161" r="4" /><circle cx="876" cy="207" r="4" />
+        </g>
+      </g>}
+    </svg>
+  );
+}
 
 export default function BrandAtmosphere({ reducedMotion }: { reducedMotion: boolean }) {
-  const element = useRef<HTMLDivElement>(null);
+  const host = useRef<HTMLDivElement>(null);
+  const [relief, setRelief] = useState(false);
 
   useEffect(() => {
-    const backdrop = element.current;
-    if (!backdrop) return;
+    setRelief(new URLSearchParams(window.location.search).get("backdrop") === "relief");
+  }, []);
 
-    let frame = 0;
-    let attached = false;
-    let viewportWidth = window.innerWidth;
-    let viewportHeight = window.innerHeight;
+  useEffect(() => {
+    const element = host.current;
+    if (!element || reducedMotion) return;
+    const sections = chapters.map(chapter => document.getElementById(chapter.id));
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    let starts: number[] = [];
+    let span = 1;
     let pointerX = 0;
     let pointerY = 0;
-    const desktop = window.matchMedia("(min-width: 961px) and (hover: hover) and (pointer: fine)");
+    let lastScroll = -1;
+    let frame = 0;
 
-    const paint = () => {
+    function paint() {
       frame = 0;
-      if (document.hidden) return;
-      backdrop.style.setProperty("--brand-pointer-x", pointerX.toFixed(4));
-      backdrop.style.setProperty("--brand-pointer-y", pointerY.toFixed(4));
-    };
-    const request = () => {
-      if (!frame && attached && !document.hidden) frame = requestAnimationFrame(paint);
-    };
-    const reset = () => {
-      cancelAnimationFrame(frame);
-      frame = 0;
+      if (!element || document.hidden) return;
+      const scroll = Math.max(0, window.scrollY);
+      if (scroll !== lastScroll) {
+        lastScroll = scroll;
+        let current = 0;
+        while (current + 1 < starts.length && scroll >= starts[current + 1]) current++;
+        const next = Math.min(current + 1, chapters.length - 1);
+        // Hold a finished composition while the visitor reads. Change the
+        // drawing during the approach to the following section.
+        const distance = starts[next] - starts[current];
+        const interval = Math.max(1, Math.min(height * .88, distance));
+        const t = next === current ? 0 : Math.min(1, Math.max(0, 1 - (starts[next] - scroll) / interval));
+        const mix = t * t * (3 - 2 * t);
+        for (const axis of axes) {
+          const value = chapters[current][axis] + (chapters[next][axis] - chapters[current][axis]) * mix;
+          element.style.setProperty(`--paper-${axis}`, value.toFixed(4));
+        }
+        element.style.setProperty("--paper-progress", Math.min(1, scroll / span).toFixed(4));
+      }
+      element.style.setProperty("--paper-pointer-x", pointerX.toFixed(3));
+      element.style.setProperty("--paper-pointer-y", pointerY.toFixed(3));
+    }
+
+    function requestPaint() {
+      if (!frame && !document.hidden) frame = window.requestAnimationFrame(paint);
+    }
+    function measure() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      starts = sections.map((section, index) => index === 0 ? 0 :
+        (section?.getBoundingClientRect().top ?? 0) + window.scrollY - height * .18);
+      span = Math.max(1, document.documentElement.scrollHeight - height);
+      lastScroll = -1;
+      requestPaint();
+    }
+    function centerPointer() {
       pointerX = 0;
       pointerY = 0;
-      backdrop.style.setProperty("--brand-pointer-x", "0");
-      backdrop.style.setProperty("--brand-pointer-y", "0");
-    };
-    const move = (event: PointerEvent) => {
-      if (event.pointerType !== "mouse") return;
-      pointerX = Math.min(.5, Math.max(-.5, event.clientX / Math.max(1, viewportWidth) - .5));
-      pointerY = Math.min(.5, Math.max(-.5, event.clientY / Math.max(1, viewportHeight) - .5));
-      request();
-    };
-    const leave = (event: PointerEvent) => {
-      if (event.relatedTarget === null) reset();
-    };
-    const resize = () => {
-      viewportWidth = window.innerWidth;
-      viewportHeight = window.innerHeight;
-      reset();
-    };
-    const visibility = () => {
-      // Keep the same neutral pose when a tab is hidden and restored.
-      reset();
-    };
-    const detach = () => {
-      if (attached) {
-        window.removeEventListener("pointermove", move);
-        window.removeEventListener("pointerout", leave);
-        window.removeEventListener("blur", reset);
-        window.removeEventListener("resize", resize);
-        document.removeEventListener("visibilitychange", visibility);
-      }
-      attached = false;
-      backdrop.dataset.brandMotion = "idle";
-      reset();
-    };
-    const configure = () => {
-      detach();
-      if (reducedMotion || !desktop.matches) return;
-      viewportWidth = window.innerWidth;
-      viewportHeight = window.innerHeight;
-      attached = true;
-      backdrop.dataset.brandMotion = "active";
-      window.addEventListener("pointermove", move, { passive: true });
-      window.addEventListener("pointerout", leave, { passive: true });
-      window.addEventListener("blur", reset);
-      window.addEventListener("resize", resize, { passive: true });
-      document.addEventListener("visibilitychange", visibility);
-    };
+      requestPaint();
+    }
+    function point(event: PointerEvent) {
+      if (!finePointer.matches || event.pointerType !== "mouse") return;
+      pointerX = (event.clientX / width) * 2 - 1;
+      pointerY = (event.clientY / height) * 2 - 1;
+      requestPaint();
+    }
 
-    configure();
-    desktop.addEventListener("change", configure);
+    const observer = new ResizeObserver(measure);
+    sections.forEach(section => { if (section) observer.observe(section); });
+    window.addEventListener("resize", measure);
+    window.addEventListener("scroll", requestPaint, { passive: true });
+    window.addEventListener("pointermove", point, { passive: true });
+    document.documentElement.addEventListener("pointerleave", centerPointer);
+    window.addEventListener("blur", centerPointer);
+    document.addEventListener("visibilitychange", centerPointer);
+    finePointer.addEventListener("change", centerPointer);
+    measure();
+
     return () => {
-      desktop.removeEventListener("change", configure);
-      detach();
+      observer.disconnect();
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", requestPaint);
+      window.removeEventListener("pointermove", point);
+      document.documentElement.removeEventListener("pointerleave", centerPointer);
+      window.removeEventListener("blur", centerPointer);
+      document.removeEventListener("visibilitychange", centerPointer);
+      finePointer.removeEventListener("change", centerPointer);
     };
   }, [reducedMotion]);
 
   return (
-    <div ref={element} className={styles.atmosphere} data-brand-atmosphere data-brand-motion="idle" aria-hidden="true">
-      <svg className={styles.left} viewBox="0 0 260 550" fill="none" focusable="false">
-        {strokes.map(path => <path key={path} d={path} />)}
-      </svg>
-      <svg className={styles.right} viewBox="0 0 260 550" fill="none" focusable="false">
-        {strokes.map(path => <path key={path} d={path} />)}
-      </svg>
+    <div ref={host} className={styles.atmosphere} data-brand-atmosphere data-finish={relief ? "pressed" : "folded"} aria-hidden="true">
+      {relief && <PaperRelief />}
+      <div className={styles.stage}>
+        <div className={styles.spread}>
+          {seams.map(sheet => (
+            <div key={sheet} className={styles.leaf}>
+              <Drawing sheet={sheet} />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

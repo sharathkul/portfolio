@@ -1,0 +1,59 @@
+.stage {
+  --edge-deep: color-mix(in srgb, var(--paper), var(--accent) 19%);
+  --edge-neutral: color-mix(in srgb, var(--paper), var(--accent) 7%);
+  --edge-lit: color-mix(in srgb, var(--paper), white 78%);
+  --floor-shade: color-mix(in srgb, var(--paper), var(--accent) 4%);
+  --floor-lit: color-mix(in srgb, var(--paper), white 25%);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  perspective: 1500px;
+  pointer-events: none;
+}
+
+.relief {
+  position: absolute;
+  left: 46%;
+  top: 52%;
+  width: clamp(750px, 96vw, 1660px);
+  height: auto;
+  overflow: visible;
+  transform: translate(-50%, -50%)
+    translate3d(calc(var(--paper-progress, 0) * 5vw), calc(var(--paper-progress, 0) * -9svh), 0)
+    rotateZ(calc(-11deg + var(--paper-progress, 0) * 17deg))
+    rotateY(calc(5deg + var(--paper-pointer-x, 0) * 5deg))
+    rotateX(calc(13deg - var(--paper-pointer-y, 0) * 4deg));
+}
+
+.lip {
+  fill: var(--paper);
+  stroke: var(--edge-lit);
+  stroke-width: 4px;
+}
+
+/* The opening holds still as the deeper plane moves inside it. */
+.recess {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: translate(
+    calc(2px - var(--paper-pointer-x, 0) * 4px),
+    calc(4px - var(--paper-pointer-y, 0) * 3px + var(--paper-progress, 0) * 4px)
+  ) scale(.967);
+}
+
+.cutFace {
+  fill: var(--edge-neutral);
+  stroke: color-mix(in srgb, var(--paper), white 38%);
+  stroke-width: 1.3px;
+}
+
+.floor {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: translate(1px, 2px) scale(.987);
+}
+
+@media (max-width: 700px) {
+  .stage { perspective: 920px; }
+  .relief { left: 51%; top: 47%; width: max(122vw, 70svh); }
+}

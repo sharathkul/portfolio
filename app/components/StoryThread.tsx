@@ -56,7 +56,9 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
       width = bounds.width;
       viewportHeight = window.innerHeight;
       const mobile = width <= 960;
-      const left = mobile ? Math.max(14, art[0].box.left - bounds.left - 22) : Math.max(24, width * .035);
+      // Centered print mounts narrow on tablets. The thread belongs in the
+      // page gutter even when a print has wider margins than its paragraph.
+      const left = mobile ? 14 : Math.max(24, width * .035);
       const right = width - left;
       const first = { x: origin.left - bounds.left + origin.width / 2, y: origin.top - bounds.top + origin.height / 2 };
       const bend = mobile ? Math.min(first.y + 30, introCopy.top - bounds.top - 14) : Math.max(first.y + 36, portrait.bottom - bounds.top + 18);

@@ -44,63 +44,67 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
 
   return (
     <div className={`story-art ${motion.scene}`} data-story-art data-scene={chapter} data-sculpture-ready={sculptureReady} aria-hidden="true">
-      <StorySculpture chapter={chapter} onReady={setSculptureReady} />
-      <svg viewBox="-255 -180 510 360" fill="none" focusable="false">
-        <defs>
-          <linearGradient id={`${id}-paper`} x1="-60" y1="-70" x2="65" y2="80" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#fffefa" /><stop offset="1" stopColor="#e7e8e6" />
-          </linearGradient>
-          <linearGradient id={`${id}-edge`} x1="0" y1="-70" x2="0" y2="80" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#e9ebed" /><stop offset=".5" stopColor="#c6ccd5" /><stop offset="1" stopColor="#98a3b4" />
-          </linearGradient>
-          <linearGradient id={`${id}-accent`} x1="-60" y1="-45" x2="80" y2="60" gradientUnits="userSpaceOnUse">
-            <stop stopColor="var(--accent-light)" /><stop offset=".5" stopColor="var(--accent)" /><stop offset="1" stopColor="var(--accent-shadow)" />
-          </linearGradient>
-        </defs>
-        <g>
-          {chapter === "operations" ? (
-            <>
-              <path className={styles.manualThread} d="M-155 30C-105 106-65 106 0 35C65 106 105 106 155 30" />
-              <path className={`${styles.localThread} ${motion.operationTrace}`} d="M-155 30C-105 106-65 106 0 35C65 106 105 106 155 30" pathLength="1" />
-              <g className={motion.paperLeft} data-motion-part="paper-left"><OperationPanel x={-155} turn={-10} kind="care" palette={palette} /></g>
-              <g className={motion.paperBottom} data-motion-part="paper-bottom"><OperationPanel x={0} turn={3} kind="information" palette={palette} /></g>
-              <g className={motion.paperRight} data-motion-part="paper-right"><OperationPanel x={155} turn={10} kind="payment" palette={palette} /></g>
-            </>
-          ) : chapter === "building" ? (
-            <>
-              <g className={styles.jointBranches}>
-                <path className={`${motion.branch} ${motion.branchCare}`} d="M0 0Q-42-34-145-42" pathLength="1" />
-                <path className={`${motion.branch} ${motion.branchEngineering}`} d="M0 0Q42-34 140-42" pathLength="1" />
-                <path className={`${motion.branch} ${motion.branchProduct}`} d="M0 0Q-2 65-8 82" pathLength="1" />
-              </g>
-              <circle className={motion.junction} r="5" fill={palette.accent} />
-              <g className={motion.care} data-motion-part="care"><Paper x={-145} y={-42} turn={-8} tinted palette={palette} /></g>
-              <g className={motion.engineering} data-motion-part="engineering"><Engineering x={140} y={-42} palette={palette} /></g>
-              <g className={motion.product} data-motion-part="product"><Devices x={-8} y={82} palette={palette} /></g>
-            </>
-          ) : (
-            <>
-              <path className={styles.deliveryBase} d="M-72-20C-11-104 52 98 105 24" />
-              <path className={`${styles.localThread} ${motion.deliveryTrace}`} d="M-72-20C-11-104 52 98 105 24" pathLength="1" />
-              <g className={motion.sourceFolder} data-motion-part="source-folder"><Folder x={-140} y={-23} turn={-8} palette={palette} /></g>
-              <g className={motion.clientFolder} data-motion-part="client-folder"><g transform="translate(145 3)">
-                <Practice x={-37} y={-37} palette={palette} />
-                <Practice x={40} y={-48} palette={palette} />
-                <Practice x={-34} y={44} palette={palette} />
-                <Practice x={44} y={35} palette={palette} />
-              </g></g>
-              <g className={motion.packet} data-motion-part="packet" transform="translate(105 24)">
-                <circle r="7" fill="#fffefa" stroke="var(--accent)" strokeWidth="2" />
-                <circle r="2.3" fill="var(--accent)" />
-              </g>
-            </>
-          )}
-        </g>
-      </svg>
-      <div className={motion.sculptureLabels} data-story-labels>
-        {chapter === "operations" ? <><span>Care</span><span>Information</span><span>Billing</span></>
-          : chapter === "building" ? <><span>Care teams</span><span>Internal tools</span><span>Engineering</span></>
-            : <><span>Implementation</span><span>Practice teams</span></>}
+      <div className={motion.plate}>
+        <div className={motion.drawing}>
+          <StorySculpture chapter={chapter} onReady={setSculptureReady} />
+          <svg viewBox="-255 -180 510 360" fill="none" focusable="false">
+            <defs>
+              <linearGradient id={`${id}-paper`} x1="-60" y1="-70" x2="65" y2="80" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#fffefa" /><stop offset="1" stopColor="#e7e8e6" />
+              </linearGradient>
+              <linearGradient id={`${id}-edge`} x1="0" y1="-70" x2="0" y2="80" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#e9ebed" /><stop offset=".5" stopColor="#c6ccd5" /><stop offset="1" stopColor="#98a3b4" />
+              </linearGradient>
+              <linearGradient id={`${id}-accent`} x1="-60" y1="-45" x2="80" y2="60" gradientUnits="userSpaceOnUse">
+                <stop stopColor="var(--accent-light)" /><stop offset=".5" stopColor="var(--accent)" /><stop offset="1" stopColor="var(--accent-shadow)" />
+              </linearGradient>
+            </defs>
+            <g>
+              {chapter === "operations" ? (
+                <>
+                  <path className={styles.manualThread} d="M-155 30C-105 106-65 106 0 35C65 106 105 106 155 30" />
+                  <path className={`${styles.localThread} ${motion.operationTrace}`} d="M-155 30C-105 106-65 106 0 35C65 106 105 106 155 30" pathLength="1" />
+                  <g className={motion.paperLeft} data-motion-part="paper-left"><OperationPanel x={-155} turn={-10} kind="care" palette={palette} /></g>
+                  <g className={motion.paperBottom} data-motion-part="paper-bottom"><OperationPanel x={0} turn={3} kind="information" palette={palette} /></g>
+                  <g className={motion.paperRight} data-motion-part="paper-right"><OperationPanel x={155} turn={10} kind="payment" palette={palette} /></g>
+                </>
+              ) : chapter === "building" ? (
+                <>
+                  <g className={styles.jointBranches}>
+                    <path className={`${motion.branch} ${motion.branchCare}`} d="M0 0Q-42-34-145-42" pathLength="1" />
+                    <path className={`${motion.branch} ${motion.branchEngineering}`} d="M0 0Q42-34 140-42" pathLength="1" />
+                    <path className={`${motion.branch} ${motion.branchProduct}`} d="M0 0Q-2 65-8 82" pathLength="1" />
+                  </g>
+                  <circle className={motion.junction} r="5" fill={palette.accent} />
+                  <g className={motion.care} data-motion-part="care"><Paper x={-145} y={-42} turn={-8} tinted palette={palette} /></g>
+                  <g className={motion.engineering} data-motion-part="engineering"><Engineering x={140} y={-42} palette={palette} /></g>
+                  <g className={motion.product} data-motion-part="product"><Devices x={-8} y={82} palette={palette} /></g>
+                </>
+              ) : (
+                <>
+                  <path className={styles.deliveryBase} d="M-72-20C-11-104 52 98 105 24" />
+                  <path className={`${styles.localThread} ${motion.deliveryTrace}`} d="M-72-20C-11-104 52 98 105 24" pathLength="1" />
+                  <g className={motion.sourceFolder} data-motion-part="source-folder"><Folder x={-140} y={-23} turn={-8} palette={palette} /></g>
+                  <g className={motion.clientFolder} data-motion-part="client-folder"><g transform="translate(145 3)">
+                    <Practice x={-37} y={-37} palette={palette} />
+                    <Practice x={40} y={-48} palette={palette} />
+                    <Practice x={-34} y={44} palette={palette} />
+                    <Practice x={44} y={35} palette={palette} />
+                  </g></g>
+                  <g className={motion.packet} data-motion-part="packet" transform="translate(105 24)">
+                    <circle r="7" fill="#fffefa" stroke="var(--accent)" strokeWidth="2" />
+                    <circle r="2.3" fill="var(--accent)" />
+                  </g>
+                </>
+              )}
+            </g>
+          </svg>
+        </div>
+        <div className={motion.sculptureLabels} data-story-labels>
+          {chapter === "operations" ? <><span>Care</span><span>Information</span><span>Billing</span></>
+            : chapter === "building" ? <><span>Care teams</span><span>Internal tools</span><span>Engineering</span></>
+              : <><span>Implementation</span><span>Practice teams</span></>}
+        </div>
       </div>
     </div>
   );
