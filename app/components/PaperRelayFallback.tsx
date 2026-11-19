@@ -1,66 +1,48 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { paperAngles, paperRig as rig } from "./paperMotion";
+import { cornerTip, foldAngle, paperActionProgress, paperNames, paperPose, paperRig as rig, paperWorld, type PaperPoint, type PaperPose } from "./paperMotion";
 
-type Point = { x: number; y: number };
-type World = readonly [number, number, number];
-const leaves = ["care", "information", "billing"] as const;
-const ink = "#2d4268";
-const stock = "#fcfaf3";
-const pageWidth = 100;
-const pageHeight = 140;
-const page = "M0 0H82L100 18V140H0Z";
+const ink = "#2f4567", slate = "#61738b";
+const c = rig.corner * 100, w = rig.width * 100, rear = c - rig.depth * 100;
 
-// Look down from the feeder side. The marked face is visible both upright
-// and lying flat, and the original rightward travel is clear on a phone.
-function project([x, y, z]: World): Point {
-  return { x: -5 + 85 * (x + .64 * z), y: 61 + 85 * (-.17 * x - .90 * y + .44 * z) };
+function project([x, y, z]: PaperPoint) {
+  return { x: -8 + 84 * (x + .29 * z), y: -4 + 84 * (-.13 * x - .69 * y + .74 * z) };
 }
 
-function affine(origin: Point, u: Point, v: Point) {
-  return `matrix(${[u.x - origin.x, u.y - origin.y, v.x - origin.x, v.y - origin.y, origin.x, origin.y]
-    .map(n => n.toFixed(5)).join(" ")})`;
+function pageMatrix(index: number, pose: PaperPose) {
+  const at = (x: number, z: number) => project(paperWorld(index, pose, [x, 0, z]));
+  const a = at(0, 0), u = at(.01, 0), v = at(0, .01);
+  return `matrix(${[u.x - a.x, u.y - a.y, v.x - a.x, v.y - a.y, a.x, a.y].map(n => n.toFixed(5)).join(" ")})`;
 }
 
-function faceMatrix(pivot: number, angle: number, depth: number) {
-  const sin = Math.sin(angle);
-  const cos = Math.cos(angle);
-  const at = (u: number, v: number) => {
-    const h = rig.reach * (1 - v / pageHeight);
-    return project([pivot + depth * cos + h * sin, rig.hingeY + h * cos - depth * sin, rig.width * (u / pageWidth - .5)]);
-  };
-  return affine(at(0, 0), at(1, 0), at(0, 1));
+function dogEar(pose: PaperPose, fold: number) {
+  const points: PaperPoint[] = [[0, 0, 0], cornerTip(fold), [rig.corner, 0, rig.corner]];
+  return points.map(v => {
+    const p = project(paperWorld(0, pose, v));
+    return p.x.toFixed(3) + "," + p.y.toFixed(3);
+  }).join(" ");
 }
 
-function plinth(pivot: number, level: number, width: number) {
-  const offsets = [-.028, .020, -.008, 0];
-  const x = pivot + offsets[level];
-  const y = .09 + .049 * level;
-  const z = offsets[3 - level];
-  const at = (u: number, v: number) => project([x - .034 + u * width / 125, y, z - rig.width * .55 + v * rig.width * 1.1 / 100]);
-  return affine(at(0, 0), at(1, 0), at(0, 1));
-}
-
-function crease(pivot: number) {
-  const front = project([pivot - .043, .255, -rig.width / 2]);
-  const back = project([pivot - .043, .255, rig.width / 2]);
-  return `M${front.x} ${front.y}L${back.x} ${back.y}`;
-}
-
-function Mark({ kind }: { kind: typeof leaves[number] }) {
-  if (kind === "care") {
-    return <path fill={ink} d="M42 47H57V64H74V79H57V96H42V79H25V64H42Z" />;
-  }
-  if (kind === "information") {
-    return <>
-      <path fill={ink} d="M18 49H70V56H18Z" />
-      <path d="M19 70H80M19 80H73M19 90H58" fill="none" stroke="#71849a" strokeWidth="2.8" />
-    </>;
-  }
-  return <g fill="none" stroke={ink}>
-    <circle cx="50" cy="72" r="26" strokeWidth="4" />
-    <path d="M59 59C41 52 34 68 49 72C70 75 61 94 42 85M51 53V92" strokeWidth="4.1" />
+function Sheet({ index }: { index: number }) {
+  const cut = index === 0;
+  const path = `M0 ${rear}H${w}V${c}H${cut ? c : 0}${cut ? "L0 0" : ""}Z`;
+  const pose = paperPose(index, 0);
+  return <g data-paper-leaf={paperNames[index]} data-x={pose.x} data-z={pose.z} data-turn={pose.turn}
+    transform={pageMatrix(index, pose)}>
+    <path d={path} fill="#8292a4" transform="translate(0 3)" />
+    <rect x={w - 2} y={rear + 14 + index * 55} width="16" height="30" rx="2" fill={[ink, "#8393a5", "#526680"][index]} />
+    <path d={path} fill={index === 2 ? "#eeeee9" : "#fbfaf5"} stroke="#8e9ba7" strokeWidth="1.4" />
+    <path d={`M18 ${rear+22}h47m62 0h19`} stroke={slate} strokeWidth="3.2" />
+    <g transform={`translate(81 ${rear+78})`}>
+      {index === 0 ? <path fill={ink} d="M-8-30H8V-8H30V8H8V30H-8V8H-30V-8H-8Z" />
+        : index === 1 ? <path d="M-36-17h72m-72 17h81m-81 17h45" stroke={ink} strokeWidth="7" />
+        : <g fill="none" stroke={ink} strokeWidth="4">
+          <circle r="28" /><path d="M9-14C-12-21-16-3-1 0C17 4 10 22-11 14M0-20v40" />
+        </g>}
+    </g>
+    <path d={`M23 ${rear+136}h112m-112 13h82m24 52h34`} stroke="#8999a8" strokeWidth="2.5" />
+    {cut && <path d={`M0 0L${c} ${c}`} stroke={slate} strokeWidth="2.2" />}
   </g>;
 }
 
@@ -72,22 +54,25 @@ export default function PaperRelayFallback() {
     const drawing = group?.closest<HTMLElement>("[data-plate-drawing]");
     const svg = group?.ownerSVGElement;
     if (!group || !slot || !drawing || !svg) return;
-    const hinges = leaves.map((name, i) => ({
-      face: group.querySelector<SVGGElement>(`[data-paper-leaf="${name}"]`)!,
-      backing: group.querySelector<SVGGElement>(`[data-paper-backing="${name}"]`)!,
-      angle: Number.NaN,
-      pivot: rig.pivots[i],
-    }));
-    const animate = (p: number) => {
-      if (!Number.isFinite(p)) return;
-      paperAngles(p).forEach((angle, i) => {
-        const hinge = hinges[i];
-        if (angle === hinge.angle) return;
-        hinge.angle = angle;
-        hinge.face.dataset.angle = angle.toFixed(6);
-        hinge.face.setAttribute("transform", faceMatrix(hinge.pivot, angle, -rig.halfThickness));
-        hinge.backing.setAttribute("transform", faceMatrix(hinge.pivot, angle, rig.halfThickness));
+    const leaves = paperNames.map(name => group.querySelector<SVGGElement>(`[data-paper-leaf="${name}"]`)!);
+    const ear = group.querySelector<SVGPolygonElement>("[data-paper-curl]")!;
+    let previous = Number.NaN;
+    const animate = (input: number) => {
+      const progress = paperActionProgress(input);
+      if (!Number.isFinite(progress) || progress === previous) return;
+      previous = progress;
+      leaves.forEach((leaf, index) => {
+        const pose = paperPose(index, progress);
+        const matrix = pageMatrix(index, pose);
+        if (leaf.getAttribute("transform") === matrix) return;
+        leaf.setAttribute("transform", matrix);
+        leaf.dataset.x = String(pose.x);
+        leaf.dataset.z = String(pose.z);
+        leaf.dataset.turn = String(pose.turn);
       });
+      const angle = foldAngle(progress);
+      ear.dataset.fold = String(angle);
+      ear.setAttribute("points", dogEar(paperPose(0, progress), angle));
     };
     const onProgress = (event: Event) => animate((event as CustomEvent<number>).detail);
     const measure = () => {
@@ -95,7 +80,7 @@ export default function PaperRelayFallback() {
       if (!width || !height) return;
       const box = svg.viewBox.baseVal;
       const scale = Math.min(width / box.width, height / box.height);
-      const points = [rig.triggerSurface, rig.trackExitWaypoint].map(world => {
+      const points = [rig.triggerSurface, rig.alignedSurface, rig.trackExitWaypoint].map(world => {
         const p = project(world);
         return { x: .5 + (p.x - box.x - box.width / 2) * scale / width,
           y: .5 + (p.y - box.y - box.height / 2) * scale / height };
@@ -117,30 +102,9 @@ export default function PaperRelayFallback() {
       delete slot.dataset.paperFallbackProjection;
     };
   }, []);
-
-  return <g ref={ref} data-paper-fallback="" fill="none" strokeLinejoin="round" strokeLinecap="round" pointerEvents="none">
-    {rig.pivots.map((pivot, index) => <g key={pivot}>
-      {[0, 1, 2, 3].map(i => <g key={i} transform={plinth(pivot, i, index === 2 ? 1.71 : 1.405)}>
-        <rect x="1.5" y="2" width="125" height="100" rx="2.4" fill={i ? "#bec5cc" : "#adb7c2"} />
-        <rect width="125" height="100" rx="2.4" fill={i === 3 ? "#f1efe7" : "#f6f4ed"} stroke="#aeb8c3" strokeWidth=".95" />
-        {i === 3 && <path d="M12 86H42M12 91H32" stroke="#adb8c4" strokeWidth="1.6" />}
-      </g>)}
-      <path d={crease(pivot)} stroke="#617389" strokeWidth="3" />
-    </g>)}
-    {[2, 1, 0].map(i => {
-      const name = leaves[i], pivot = rig.pivots[i];
-      return <g key={name}>
-        <g data-paper-backing={name} transform={faceMatrix(pivot, 0, rig.halfThickness)}>
-          <path d={page} fill="#60728a" stroke="#415675" strokeWidth="1.15" />
-        </g>
-        <g data-paper-leaf={name} data-angle="0" transform={faceMatrix(pivot, 0, -rig.halfThickness)}>
-          <path d={page} fill={stock} stroke="#4a607a" strokeWidth="1.25" />
-          <path d="M82 0L100 18H83Z" fill={ink} />
-          <path d="M13 17H34" stroke="#97a5b2" strokeWidth="2.1" />
-          <g transform="translate(0 -10)"><Mark kind={name} /></g>
-          <path d="M16 115H65M16 122H50" stroke="#97a4b2" strokeWidth="1.6" />
-        </g>
-      </g>;
-    })}
+  return <g ref={ref} data-paper-fallback="" pointerEvents="none" strokeLinejoin="round" fill="none">
+    {[2, 1, 0].map(i => <Sheet key={i} index={i} />)}
+    <polygon data-paper-curl="" data-fold={foldAngle(0)} points={dogEar(paperPose(0, 0), foldAngle(0))}
+      fill={slate} stroke="#435973" strokeWidth="1.4" />
   </g>;
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowUpRight, Check } from "lucide-react";
+import Signature from "./Signature";
 import styles from "./ContactForm.module.css";
 
 type ContactField = "name" | "email" | "message";
@@ -11,7 +12,7 @@ type FormStatus = "idle" | "sending" | "error" | "success";
 const fieldOrder: ContactField[] = ["message", "name", "email"];
 const linkedIn = "https://www.linkedin.com/in/sharathkulkarni/";
 
-export default function ContactForm() {
+export default function ContactForm({ reducedMotion }: { reducedMotion: boolean }) {
   const form = useRef<HTMLFormElement>(null);
   const statusMessage = useRef<HTMLParagraphElement>(null);
   const inFlight = useRef(false);
@@ -127,14 +128,9 @@ export default function ContactForm() {
   return (
     <section className={styles.contact} id="contact" aria-labelledby="contact-title" data-status={status}>
       <div className={styles.intro}>
-        <div>
-          <h2 id="contact-title">Over to you.</h2>
-          <p>An idea, a question, or something worth building.</p>
-        </div>
-        <svg className={styles.connection} viewBox="0 0 144 88" fill="none" aria-hidden="true">
-          <path className={styles.loop} d="M5 67C27 67 64 62 67 37C72 4 26 7 28 35C30 64 107 75 117 42C126 12 82 9 81 37C80 62 115 67 139 59" />
-          <circle cx="139" cy="59" r="3" />
-        </svg>
+        <h2 id="contact-title">Over to you.</h2>
+        <p>An idea, a question, or something worth building.</p>
+        <Signature reducedMotion={reducedMotion} />
       </div>
       {status === "success" ? (
         <div className={styles.confirmation}>

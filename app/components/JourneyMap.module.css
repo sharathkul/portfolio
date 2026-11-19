@@ -263,3 +263,22 @@
     line-height: 1.5;
   }
 }
+
+.pinTrace {
+  fill: none;
+  stroke: var(--journey-thread);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  opacity: 0;
+  animation: windPin 780ms ease-out;
+}
+
+@keyframes windPin {
+  0% { opacity: 0; stroke-dashoffset: 1; }
+  10% { opacity: .85; }
+  76% { opacity: .85; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 0; }
+}
+
+.map[data-reduced-motion="true"] .pinTrace { animation: none; }

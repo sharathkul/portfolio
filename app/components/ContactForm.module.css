@@ -8,46 +8,30 @@
 }
 
 .intro {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "title mark" "description mark";
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  column-gap: 20px;
+  row-gap: 8px;
   margin-bottom: 36px;
 }
 
+.intro [data-signature] { grid-area: mark; justify-self: end; }
 .intro h2 {
-  margin: 0 0 12px;
+  grid-area: title;
+  align-self: end;
+  margin: 0;
   font-size: clamp(38px, 3.4vw, 48px);
 }
 
 .intro p {
+  grid-area: description;
+  align-self: start;
   margin: 0;
   color: var(--quiet);
   font-size: 19px;
 }
-
-.connection {
-  width: 116px;
-  flex: 0 0 116px;
-  overflow: visible;
-  color: var(--accent);
-  transform: rotate(-6deg);
-  transition: transform 450ms ease;
-}
-
-.loop {
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-dasharray: 390;
-  stroke-dashoffset: 50;
-  transition: stroke-dashoffset 600ms ease;
-}
-
-.connection circle { fill: currentColor; }
-.contact:focus-within .connection { transform: rotate(0); }
-.contact:focus-within .loop,
-.contact[data-status="success"] .loop { stroke-dashoffset: 0; }
 
 .form { display: grid; gap: 27px; }
 .field { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
@@ -187,10 +171,15 @@
 
 @media (max-width: 760px) {
   .contact { margin-top: 42px; padding-top: 32px; scroll-margin-top: 96px; }
-  .intro { align-items: flex-start; gap: 12px; margin-bottom: 30px; }
+  .intro {
+    grid-template-areas: "title mark" "description description";
+    column-gap: 6px;
+    row-gap: 5px;
+    margin-bottom: 30px;
+  }
+  .intro h2 { align-self: center; }
   .intro h2 { font-size: 36px; }
-  .intro p { max-width: 220px; font-size: 18px; }
-  .connection { width: 72px; flex-basis: 72px; margin-top: 7px; }
+  .intro p { max-width: 32ch; font-size: 18px; }
   .nameEmail { gap: 24px; }
   .field textarea { min-height: 150px; font-size: 21px; }
 }
@@ -199,12 +188,11 @@
   .nameEmail { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .intro h2 { font-size: 34px; letter-spacing: -1.2px; }
   .intro p { font-size: 17px; }
-  .connection { flex-basis: 62px; width: 62px; }
   .actions { gap: 12px; }
   .send { gap: 16px; padding-inline: 18px; font-size: 17px; }
   .linkedIn { font-size: 15px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .connection, .loop, .send svg, .field input, .field textarea { transition: none; }
+  .send svg, .field input, .field textarea { transition: none; }
 }

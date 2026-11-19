@@ -1,30 +1,40 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { paperAngles, paperRig } from "../app/components/paperMotion.ts";
+import { cornerTip, foldAngle, paperPose, paperRig, paperTiming } from "../app/components/paperMotion.ts";
 
-test("the bead starts Care, then each sheet tips the next one on contact", () => {
-  assert.deepEqual(paperAngles(.22), [0, 0, 0]);
-  assert.ok(paperAngles(.32)[0] > 0);
-  assert.equal(paperAngles(.43)[1], 0);
-  assert.ok(paperAngles(.50)[1] > 0);
-  assert.deepEqual(paperAngles(.62), paperAngles(.64));
-  assert.equal(paperAngles(.64)[2], 0);
-  assert.ok(paperAngles(.72)[2] > 0);
-  assert.deepEqual(paperAngles(.88), paperAngles(1));
+test("the curled edge takes up tension before any of the loose papers move", () => {
+  for (let i = 0; i < 3; i++) assert.deepEqual(paperPose(i, 0), paperPose(i, paperTiming.pull));
+  assert.ok(foldAngle(paperTiming.pull) > foldAngle(paperTiming.catch) + .6);
+  assert.deepEqual(paperPose(2, .40), paperPose(2, 0));
+  assert.ok(paperPose(0, .40).x > paperPose(0, 0).x);
 });
 
-test("the striking edge stays against the receiving face after each contact", () => {
-  // Project each moving top corner onto its neighbour's face normal.
-  const { pivots, reach, halfThickness: half } = paperRig;
-  for (let step = 0; step <= 1000; step++) {
-    const progress = step / 1000;
-    const angles = paperAngles(progress);
-    for (const [index, contact] of [.43, .62].entries()) {
-      if (progress < contact) continue;
-      const delta = angles[index] - angles[index + 1];
-      const distance = reach * Math.sin(delta) + half * Math.cos(delta)
-        - (pivots[index + 1] - pivots[index]) * Math.cos(angles[index + 1]);
-      assert.ok(Math.abs(distance + half) < 1e-10);
-    }
+test("the crease follows the bead all the way to the registered stack", () => {
+  const a = paperRig.triggerSurface;
+  const b = paperRig.alignedSurface;
+  for (let i = 0; i <= 100; i++) {
+    const t = i/100;
+    const pose = paperPose(0, paperTiming.pull + t * (paperTiming.release - paperTiming.pull));
+    assert.ok(Math.abs(pose.x - (a[0] + (b[0] - a[0]) * t)) < 1e-10);
+    assert.ok(Math.abs(pose.z - (a[2] + (b[2] - a[2]) * t)) < 1e-10);
   }
+  const top = paperPose(0, 1);
+  for (let i = 0; i < 3; i++) {
+    const aligned = paperPose(i, paperTiming.release);
+    assert.deepEqual(aligned, paperPose(i, 1));
+    assert.ok(Math.abs(aligned.turn - top.turn) < 1e-10);
+    assert.ok(Math.hypot(aligned.x - top.x, aligned.z - top.z) < .12);
+  }
+});
+
+test("the corner uncurls after release, rebounds once and holds its shape", () => {
+  const c = paperRig.corner;
+  for (let i = 0; i <= 100; i++) {
+    const [x,y,z] = cornerTip(foldAngle(i/100));
+    assert.ok(Math.abs(Math.hypot(x,y,z) - c) < 1e-10);
+    assert.ok(Math.abs(Math.hypot(x-c,y,z-c) - c) < 1e-10);
+  }
+  assert.ok(foldAngle(.78) < foldAngle(.72));
+  assert.ok(foldAngle(.82) > foldAngle(.78));
+  assert.equal(foldAngle(.88), foldAngle(1));
 });

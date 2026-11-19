@@ -38,7 +38,7 @@ export default function StoryArt({ chapter, reducedMotion = false }: { chapter: 
     <div id={{ building: "bridge", clients: "practice-handoff", operations: "paper-relay" }[chapter]}
       className={`story-art ${motion.scene}`} data-story-art data-scene={chapter} data-sculpture-ready={sculptureReady}
       role={chapter === "building" ? "img" : "group"}
-      aria-label={chapter === "operations" ? "Paper chain reaction. The bead tips Care into Information, which pushes Billing over." : chapter === "clients" ? "Practice handoff. A card catches on the folder lip. Its weight pulls the feeder guide back, letting the same card slide through." : "Two tiles form a bridge. On the chip, three etched traces merge into one signal that travels to the screen."}>
+      aria-label={chapter === "operations" ? "The thread catches a curled corner, pulls three papers into alignment and slips free." : chapter === "clients" ? "Practice handoff. A card catches on the folder lip. Its weight pulls the feeder guide back, letting the same card slide through." : "Two tiles form a bridge. On the chip, three etched traces merge into one signal that travels to the screen."}>
       <div className={motion.plate}>
         <div className={motion.drawing} data-plate-drawing aria-hidden="true">
           <StorySculpture chapter={chapter} onReady={setSculptureReady} />

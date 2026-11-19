@@ -64,7 +64,7 @@ export default function SceneReplay({ sceneName }: { sceneName: "paper" | "pract
   const Icon = { ready: RotateCcw, playing: Pause, paused: Play }[mode];
   return <button ref={button} type="button" className={styles.replay}
     data-practice-play={sceneName === "practice" ? "" : undefined} data-paper-play={sceneName === "paper" ? "" : undefined}
-    aria-label={`${label} the ${sceneName === "paper" ? "paper chain reaction" : "practice handoff"}`}
+    aria-label={`${label} the ${sceneName === "paper" ? "paper snag" : "practice handoff"}`}
     onClick={() => toggle.current()}>
     <Icon size={14} aria-hidden="true" />{label}
   </button>;

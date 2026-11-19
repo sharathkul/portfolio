@@ -148,7 +148,7 @@ export default function Home() {
             <p>Brand work, running a business and exploring technology each brought a different way to understand a problem. Healthcare brought those threads together.</p>
           </div>
           <JourneyMap reducedMotion={reducedMotion} />
-          <ContactForm />
+          <ContactForm reducedMotion={reducedMotion} />
         </section>
       </main>
       <nav className="chapter-navigation" aria-label="Explore the story">

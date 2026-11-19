@@ -353,7 +353,7 @@ export function createStorySculpture(
   // do not clip a raised document or a folder during a scroll transition.
   const envelope = new THREE.Box3();
   const envelopePoints: THREE.Vector3[] = [];
-  const samples = papers ? [0, .22, .43, .62, .64, .76, .88, 1] : practice ? [0, .22, .40, .48, .69, .9, 1] : [0, .25, .5, .75, 1];
+  const samples = papers ? [0, .22, .34, .50, .64, .72, .78, .82, .88, 1] : practice ? [0, .22, .40, .48, .69, .9, 1] : [0, .25, .5, .75, 1];
   const poses = samples.map(progress => ({ progress, interaction: { x: 0, y: 0 } }));
   if (!fixedMechanism) {
     for (const progress of [0, .5, 1]) for (const x of [-.5, .5]) for (const y of [-.5, .5]) {
@@ -377,7 +377,7 @@ export function createStorySculpture(
   }
   const target = envelope.getCenter(new THREE.Vector3());
   target.y -= (envelope.max.y - envelope.min.y) * .08;
-  const direction = new THREE.Vector3(...(chapter === "building" ? [3.7, 4.7, 9] : chapter === "operations" ? [-5.1, 4.9, 8] : [1.8, 5.7, 10]) as [number, number, number]).normalize();
+  const direction = new THREE.Vector3(...(chapter === "building" ? [3.7, 4.7, 9] : chapter === "operations" ? [-2.3, 8.4, 7.8] : [1.8, 5.7, 10]) as [number, number, number]).normalize();
   let disposed = false;
   let lastWidth = 0;
   let lastHeight = 0;
@@ -409,7 +409,8 @@ export function createStorySculpture(
     }
     if (fixedMechanism) {
       const { group, triggerSurface, trackExitWaypoint } = fixedMechanism;
-      onMechanismProjection([triggerSurface, trackExitWaypoint].map(point =>
+      const ports = papers ? [triggerSurface, papers.alignedSurface, trackExitWaypoint] : [triggerSurface, trackExitWaypoint];
+      onMechanismProjection(ports.map(point =>
         project(group.localToWorld(projectedAnchor.copy(point)))));
     }
   };

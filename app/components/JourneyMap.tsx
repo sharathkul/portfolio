@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import ThreadOrb from "./ThreadOrb";
 import styles from "./JourneyMap.module.css";
 
@@ -15,18 +15,75 @@ type Stop = {
 };
 
 const stops: Stop[] = [
-  { label: "BBDO", desktop: { x: 70, y: 200 }, mobile: { x: 82, y: 35 }, labelDesktop: { x: 70, y: 231 }, labelMobile: { x: 82, y: 60 } },
-  { label: "Business", desktop: { x: 235, y: 280 }, mobile: { x: 235, y: 105 }, labelDesktop: { x: 235, y: 311 }, labelMobile: { x: 235, y: 130 } },
-  { label: "California", desktop: { x: 398, y: 190 }, mobile: { x: 82, y: 175 }, labelDesktop: { x: 398, y: 139 }, labelMobile: { x: 82, y: 200 } },
-  { label: "Juniper", desktop: { x: 555, y: 270 }, mobile: { x: 235, y: 245 }, labelDesktop: { x: 555, y: 301 }, labelMobile: { x: 235, y: 270 } },
-  { label: "TNG", desktop: { x: 710, y: 180 }, mobile: { x: 82, y: 315 }, labelDesktop: { x: 710, y: 129 }, labelMobile: { x: 82, y: 340 } },
-  { label: "nCare", desktop: { x: 870, y: 92 }, mobile: { x: 175, y: 385 }, labelDesktop: { x: 870, y: 41 }, labelMobile: { x: 175, y: 410 } },
+  { label: "BBDO", desktop: { x: 70, y: 200 }, mobile: { x: 82, y: 35 }, labelDesktop: { x: 70, y: 231 }, labelMobile: { x: 168, y: 33 } },
+  { label: "Business", desktop: { x: 235, y: 280 }, mobile: { x: 235, y: 105 }, labelDesktop: { x: 235, y: 311 }, labelMobile: { x: 144, y: 103 } },
+  { label: "California", desktop: { x: 398, y: 190 }, mobile: { x: 82, y: 175 }, labelDesktop: { x: 398, y: 139 }, labelMobile: { x: 180, y: 173 } },
+  { label: "Juniper", desktop: { x: 555, y: 270 }, mobile: { x: 235, y: 245 }, labelDesktop: { x: 555, y: 301 }, labelMobile: { x: 149, y: 243 } },
+  { label: "TNG", desktop: { x: 710, y: 180 }, mobile: { x: 82, y: 315 }, labelDesktop: { x: 710, y: 129 }, labelMobile: { x: 158, y: 313 } },
+  { label: "nCare", desktop: { x: 870, y: 92 }, mobile: { x: 175, y: 385 }, labelDesktop: { x: 870, y: 41 }, labelMobile: { x: 259, y: 383 } },
 ];
 
 const paths = {
   desktop: "M70 198C125 184 170 310 235 280S338 149 398 190S493 315 555 270S652 139 710 180S814 111 870 90",
   mobile: "M82 33C82 73 235 61 235 105S82 132 82 175S235 201 235 245S82 270 82 315S175 346 175 383",
 };
+
+type Cubic = [Point, Point, Point, Point];
+const pt = (x: number, y: number): Point => ({ x, y });
+const xy = (p: Point) => `${p.x.toFixed(2)} ${p.y.toFixed(2)}`;
+const pointAt = (a: Point, b: Point, t: number) => pt(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
+const advance = (p: Point, v: Point, n: number) => pt(p.x + v.x * n, p.y + v.y * n);
+
+// Split the original rail so only the few millimetres around a pin change.
+function split([a, b, c, d]: Cubic, t: number): [Cubic, Cubic] {
+  const ab = pointAt(a, b, t), bc = pointAt(b, c, t), cd = pointAt(c, d, t);
+  const left = pointAt(ab, bc, t), right = pointAt(bc, cd, t);
+  const middle = pointAt(left, right, t);
+  return [[a, ab, left, middle], [middle, right, cd, d]];
+}
+
+function pinWrap(center: Point, forward: Point, explored: boolean) {
+  const rx = explored ? 15.5 : 11.5, ry = explored ? 10.5 : 8;
+  const angle = Math.atan2(forward.y / ry, forward.x / rx) - Math.PI / 4;
+  const ellipse = (a: number) => pt(center.x + rx * Math.cos(a), center.y + ry * Math.sin(a));
+  const tangent = (a: number) => {
+    const x = -rx * Math.sin(a), y = ry * Math.cos(a), length = Math.hypot(x, y);
+    return pt(x / length, y / length);
+  };
+  const end = angle + Math.PI * 1.5;
+  const enter = ellipse(angle), leave = ellipse(end);
+  return { enter, leave, into: tangent(angle), out: tangent(end),
+    arc: `A${rx} ${ry} 0 1 1 ${xy(leave)}` };
+}
+
+function tracedRoute(mobile: boolean, explored: number | null) {
+  const pins = stops.map(s => {
+    const p = mobile ? s.mobile : s.desktop;
+    return pt(p.x, p.y - 2);
+  });
+  const controls = mobile
+    ? [pt(235, 61), pt(82, 132), pt(235, 201), pt(82, 270), pt(175, 346)]
+    : [pt(170, 310), pt(338, 149), pt(493, 315), pt(652, 139), pt(814, 111)];
+  const first = mobile ? pt(82, 73) : pt(125, 184);
+  const winds = pins.map((pin, i) => pinWrap(pin,
+    i ? pt(pin.x - controls[i - 1].x, pin.y - controls[i - 1].y) : pt(first.x - pin.x, first.y - pin.y),
+    i === explored));
+  const firstWrap = winds[0];
+  let d = `M${xy(pins[0])} Q${xy(advance(firstWrap.enter, firstWrap.into, -5))} ${xy(firstWrap.enter)} ${firstWrap.arc}`;
+  controls.forEach((last, i) => {
+    const handle = i ? pointAt(controls[i - 1], pins[i], 2) : first;
+    const [depart, rest] = split([pins[i], handle, last, pins[i + 1]], .16);
+    const [rail, approach] = split(rest, .68 / .84);
+    const from = winds[i], to = winds[i + 1];
+    d += ` C${xy(advance(from.leave, from.out, 9))} ${xy(depart[2])} ${xy(depart[3])}`;
+    d += ` C${xy(rail[1])} ${xy(rail[2])} ${xy(rail[3])}`;
+    d += ` C${xy(approach[1])} ${xy(advance(to.enter, to.into, -9))} ${xy(to.enter)} ${to.arc}`;
+  });
+  const last = winds[winds.length - 1];
+  d += ` Q${xy(advance(last.leave, last.out, 5))} ${xy(pins[pins.length - 1])}`;
+  const detail = explored === null ? "" : `M${xy(winds[explored].enter)} ${winds[explored].arc}`;
+  return { d, detail };
+}
 
 const scopes = [
   { title: "People", detail: "Care & operations", desktop: { x: 765, y: 251 }, mobile: { x: 55, y: 470 } },
@@ -66,7 +123,8 @@ function Platform({ point, selected = false, port }: { point: Point; selected?: 
   );
 }
 
-function Drawing({ mobile, selected, id }: { mobile: boolean; selected: number; id: string }) {
+function Drawing({ mobile, selected, visit, id }: { mobile: boolean; selected: number; visit: number; id: string }) {
+  const { d, detail } = useMemo(() => tracedRoute(mobile, visit ? selected : null), [mobile, selected, visit]);
   const route = mobile ? paths.mobile : paths.desktop;
   const branch = mobile
     ? ["M175 383V422Q175 443 55 468", "M175 383V468", "M175 383V422Q175 443 295 468"]
@@ -89,13 +147,14 @@ function Drawing({ mobile, selected, id }: { mobile: boolean; selected: number; 
       <path className={styles.routeSurface} d={route} />
       {branch.map((d, index) => <path key={index} className={styles.branchSurface} d={d} />)}
       <g className={styles.routeGuide}>
-        <path d={route} />
         {branch.map((d, index) => <path key={index} d={d} />)}
       </g>
       {stops.map((stop, index) => <Platform key={stop.label} point={mobile ? stop.mobile : stop.desktop} selected={selected === index} port={index === 0 ? "entry" : undefined} />)}
       {scopes.map((scope) => <Platform key={scope.title} point={mobile ? scope.mobile : scope.desktop} port={scope.title === "Delivery" ? "exit" : undefined} />)}
-      <path className={styles.thread} data-journey-route="" d={route} pathLength="1" />
+      <path className={styles.routeGuide} d={d} />
+      <path className={styles.thread} data-journey-route="" d={d} pathLength="1" />
       {branch.map((d, index) => <path key={index} className={styles.branchThread} data-journey-branch={scopes[index].title} d={d} pathLength="1" />)}
+      {detail && <path key={visit} className={styles.pinTrace} data-map-pin-trace={selected} d={detail} pathLength="1" />}
       <ThreadOrb />
     </svg>
   );
@@ -111,7 +170,7 @@ function labelPosition(desktop: Point, mobile: Point): CSSProperties {
 }
 
 export default function JourneyMap({ reducedMotion = true }: Props) {
-  const [selected, setSelected] = useState(5);
+  const [{ selected, visit }, select] = useState({ selected: 5, visit: 0 });
   const host = useRef<HTMLDivElement>(null);
   const id = useId().replace(/:/g, "");
   const detailId = `${id}-journey-detail`;
@@ -182,13 +241,13 @@ export default function JourneyMap({ reducedMotion = true }: Props) {
       element.removeEventListener("thread:map-progress", onProgress);
       observer.disconnect();
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, selected, visit]);
 
   return (
     <div ref={host} className={styles.map} data-journey-map data-reduced-motion={reducedMotion}>
       <div className={styles.drawing} role="group" aria-label="Background and experience. Select a stop to learn more.">
-        <Drawing mobile={false} selected={selected} id={`${id}-desktop-shadow`} />
-        <Drawing mobile selected={selected} id={`${id}-mobile-shadow`} />
+        <Drawing mobile={false} selected={selected} visit={visit} id={`${id}-desktop-shadow`} />
+        <Drawing mobile selected={selected} visit={visit} id={`${id}-mobile-shadow`} />
         {stops.map((stop, index) => (
           <button
             key={stop.label}
@@ -197,7 +256,7 @@ export default function JourneyMap({ reducedMotion = true }: Props) {
             type="button"
             aria-pressed={selected === index}
             aria-controls={detailId}
-            onClick={() => setSelected(index)}
+            onClick={() => select(current => ({ selected: index, visit: current.visit + 1 }))}
           >
             {stop.label}
           </button>
