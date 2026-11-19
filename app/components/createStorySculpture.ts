@@ -1,12 +1,14 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { createTileBridge } from "./createTileBridge";
 
 export type SculptureChapter = "operations" | "building" | "clients";
 export type SculptureInteraction = { x: number; y: number };
 export type ThreadProjection = { x: number; y: number }[];
 export type StorySculpture = {
   resize(width: number, height: number): void;
-  update(progress: number, reducedMotion: boolean, interaction?: SculptureInteraction): void;
+  update(progress: number, reducedMotion: boolean, interaction?: SculptureInteraction, bridgeProgress?: number): void;
+  updateBridge(progress: number, reducedMotion: boolean): void;
   dispose(): void;
 };
 
@@ -20,6 +22,7 @@ export function createStorySculpture(
   canvas: HTMLCanvasElement,
   chapter: SculptureChapter,
   onProjection: (points: ThreadProjection) => void,
+  onBridgeProjection: (points: ThreadProjection) => void,
 ): StorySculpture {
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "low-power" });
   renderer.setClearColor(0x000000, 0);
@@ -35,6 +38,8 @@ export function createStorySculpture(
   const model = new THREE.Group();
   scene.add(model);
   const threadAnchors: THREE.Object3D[] = [];
+  const bridgeAnchors: THREE.Object3D[] = [];
+  let bridge: ReturnType<typeof createTileBridge> | undefined;
   const projectedAnchor = new THREE.Vector3();
   function anchorThread(object: THREE.Object3D, x: number, y: number, z: number) {
     const anchor = new THREE.Object3D();
@@ -161,9 +166,16 @@ export function createStorySculpture(
       workingChannel.draw(phase(progress, .34, .9));
     };
   } else if (chapter === "building") {
+    const slate = physical(0x475b74, .57, { clearcoat: .08 });
+    const metal = physical(0xc0b9a8, .47, { metalness: .28 });
+    bridge = createTileBridge({ blue, slate, metal, box, ownGeometry });
+    bridge.group.position.set(-2.30, .015, 1.79);
+    bridge.group.rotation.y = -.20;
+    bridge.group.scale.setScalar(1.84);
+    model.add(bridge.group);
     plinth(-1.8, -.38, 1.45, 1.34);
     plinth(1.8, -.38, 1.45, 1.34);
-    plinth(0, .65, 2.36, 1.66);
+    plinth(.75, .53, 2.36, 1.66);
     const care = pageStack(1.02, 1.2);
     model.add(care);
     const engineering = new THREE.Group();
@@ -205,6 +217,16 @@ export function createStorySculpture(
     anchorThread(care, -.42, .20, .20);
     anchorThread(product, -.20, .52, .067);
     anchorThread(engineering, .58, .48, .14);
+    // Fixed guides describe the upright face and the surface of the landed
+    // deck. Rotating a leaf must never move the thread that drives it.
+    for (const point of [bridge.contactPoint(0), bridge.bridgeEntry(0), bridge.bridgeExit(0)]) {
+      const anchor = new THREE.Object3D();
+      anchor.position.copy(point);
+      anchor.position.z = .14;
+      bridge.group.add(anchor);
+      bridgeAnchors.push(anchor);
+    }
+    bridgeAnchors.push(threadAnchors[1]);
 
     const intelligence = new THREE.Group();
     intelligence.position.set(-.75, .95, -.7);
@@ -247,7 +269,7 @@ export function createStorySculpture(
     const hub = new THREE.Vector3(-.75, .48, -.52);
     const careLink = connector(new THREE.QuadraticBezierCurve3(new THREE.Vector3(-1.75, .25, -.25), new THREE.Vector3(-1.45, .7, -.2), hub));
     const engineeringLink = connector(new THREE.QuadraticBezierCurve3(new THREE.Vector3(1.75, .25, -.25), new THREE.Vector3(.2, .78, -.58), hub));
-    const productSignal = connector(new THREE.CubicBezierCurve3(hub, new THREE.Vector3(-.75, .65, .2), new THREE.Vector3(.25, .65, .3), new THREE.Vector3(.25, .29, .65)), .018, signal);
+    const productSignal = connector(new THREE.CubicBezierCurve3(hub, new THREE.Vector3(-.75, .65, .2), new THREE.Vector3(.76, .65, .3), new THREE.Vector3(.76, .29, .51)), .018, signal);
     animate = progress => {
       const gathering = smooth(phase(progress, .04, .55));
       care.position.set(mix(-2.05, -1.8, gathering), mix(.65, .195, gathering), -.38);
@@ -267,7 +289,7 @@ export function createStorySculpture(
       intelligence.rotation.y = mix(-.13, .04, gathering);
       productSignal.draw(phase(progress, .5, .9));
       const rise = smooth(phase(progress, .38, .92));
-      product.position.set(.25, mix(.02, .21, rise), .65);
+      product.position.set(.76, mix(.02, .21, rise), .51);
       product.rotation.y = mix(-.15, .02, rise);
       product.scale.setScalar(mix(1.15, 1.35, rise));
     };
@@ -403,6 +425,7 @@ export function createStorySculpture(
   const poses = [0, .25, .5, .75, 1].map(progress => ({ progress, interaction: { x: 0, y: 0 } }));
   for (const progress of [0, .5, 1]) for (const x of [-.5, .5]) for (const y of [-.5, .5]) poses.push({ progress, interaction: { x, y } });
   for (const pose of poses) {
+    bridge?.update(pose.progress);
     apply(pose.progress, false, pose.interaction);
     envelope.union(new THREE.Box3().setFromObject(model));
     model.traverse(object => {
@@ -425,18 +448,32 @@ export function createStorySculpture(
   let lastWidth = 0;
   let lastHeight = 0;
 
+  function project(point: THREE.Vector3) {
+    point.project(camera);
+    return {
+      x: Math.round(clamp((point.x + 1) / 2) * 10000) / 10000,
+      y: Math.round(clamp((1 - point.y) / 2) * 10000) / 10000,
+    };
+  }
+
   const render = () => {
     if (disposed) return;
     renderer.render(scene, camera);
     // The renderer has updated the world matrices for this exact pose.
     // Normalized positions remain independent of canvas pixel density.
-    onProjection(threadAnchors.map(anchor => {
-      projectedAnchor.setFromMatrixPosition(anchor.matrixWorld).project(camera);
-      return {
-        x: Math.round(clamp((projectedAnchor.x + 1) / 2) * 10000) / 10000,
-        y: Math.round(clamp((1 - projectedAnchor.y) / 2) * 10000) / 10000,
-      };
-    }));
+    if (bridge && lastHeight) {
+      const anchors = bridgeAnchors.map(anchor => project(projectedAnchor.setFromMatrixPosition(anchor.matrixWorld)));
+      // The thread orb has a CSS-pixel radius, while the scene scales. Locate
+      // its centre height on the actual first face at the current resolution.
+      const hit = bridgeAnchors[0];
+      const surface = anchors[0];
+      const testPoint = project(hit.localToWorld(projectedAnchor.set(0, .1, 0)));
+      const pixelsPerUnit = (surface.y - testPoint.y) * lastHeight / .1;
+      const contactLift = THREE.MathUtils.clamp(8.9 / Math.max(1, pixelsPerUnit), .088, .78);
+      anchors[0] = project(hit.localToWorld(projectedAnchor.set(0, contactLift, 0)));
+      onBridgeProjection(anchors);
+    }
+    onProjection(threadAnchors.map(anchor => project(projectedAnchor.setFromMatrixPosition(anchor.matrixWorld))));
   };
   const fitCamera = () => {
     const projected = new THREE.Vector3();
@@ -447,10 +484,11 @@ export function createStorySculpture(
       camera.updateMatrixWorld(true);
       if (envelopePoints.every(point => {
         projected.copy(point).project(camera);
-        return Math.abs(projected.x) <= .92 && projected.y <= .9 && projected.y >= -.7;
+        return Math.abs(projected.x) <= .92 && projected.y <= .9 && projected.y >= (bridge ? -.84 : -.7);
       })) break;
     }
   };
+  bridge?.update(1);
   apply(lastProgress, lastReduced);
 
   return {
@@ -473,13 +511,19 @@ export function createStorySculpture(
       fitCamera();
       render();
     },
-    update(progress, reducedMotion, interaction) {
+    update(progress, reducedMotion, interaction, bridgeProgress = 0) {
       if (disposed) return;
       lastProgress = clamp(progress);
       lastReduced = reducedMotion;
       lastInteraction = interaction ?? { x: 0, y: 0 };
+      bridge?.update(reducedMotion ? 1 : clamp(bridgeProgress));
       apply(lastProgress, lastReduced, lastInteraction);
       render();
+    },
+    updateBridge(progress, reducedMotion) {
+      if (disposed || !bridge) return;
+      // Neither the camera nor a thread anchor moved. Do not notify layout.
+      if (bridge.update(reducedMotion ? 1 : clamp(progress))) renderer.render(scene, camera);
     },
     dispose() {
       if (disposed) return;

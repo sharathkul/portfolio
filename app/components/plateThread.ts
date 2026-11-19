@@ -1,6 +1,7 @@
+import { bridgeThread } from "./bridgeThread";
+
 type Point = { x: number; y: number };
 export type Projection = Point[] | null;
-export type Stroke = { paths: SVGPathElement[]; start: number; end: number };
 
 const fallbackSelectors: Record<string, string[]> = {
   operations: ["[data-motion-part='paper-left']", "[data-motion-part='paper-bottom']", "[data-motion-part='paper-right']"],
@@ -19,14 +20,16 @@ export function measurePlate(element: HTMLElement, fromLeft: boolean) {
   const entry = { x: edge, y: offset.y + height * .26 };
   const exit = { x: edge, y: offset.y + height * .88 };
   const allPaths = element.querySelectorAll<SVGPathElement>("[data-plate-edging], [data-plate-base], [data-plate-drawn]");
-  const paths = Array.from(element.querySelectorAll<SVGPathElement>("[data-plate-drawn]"));
+  const ink = element.querySelector<SVGPathElement>("[data-plate-drawn]")!;
   const fallbackObjects = fallbackSelectors[element.dataset.scene!].map(selector => element.querySelector(selector)!);
+  const bridge = element.dataset.scene === "building" ? bridgeThread(element) : null;
+  const local = (p: Point) => ({ x: offset.x + p.x * width, y: offset.y + p.y * height });
   element.querySelectorAll("[data-plate-layer]").forEach(layer => layer.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`));
 
   function draw(projection: Projection) {
     let points: Point[];
     if (projection?.length === 3) {
-      points = projection.map(p => ({ x: offset.x + p.x * width, y: offset.y + p.y * height }));
+      points = projection.map(local);
     } else {
       // A device without WebGL still has animated SVG objects to thread.
       const currentBox = element.getBoundingClientRect();
@@ -34,6 +37,13 @@ export function measurePlate(element: HTMLElement, fromLeft: boolean) {
         const rect = object.getBoundingClientRect();
         return { x: rect.left - currentBox.left + rect.width * .5, y: rect.top - currentBox.top + rect.height * .57 };
       });
+    }
+    const layout = element.dataset.bridgeProjection || element.dataset.bridgeFallbackProjection;
+    if (bridge && layout) {
+      const projected: Point[] = JSON.parse(layout);
+      const d = bridge.draw(entry, exit, projected.map(local), box.width, fromLeft);
+      allPaths.forEach(path => path.setAttribute("d", d));
+      return;
     }
     if (!fromLeft) points.reverse();
     const [a, b, c] = points;
@@ -52,5 +62,5 @@ export function measurePlate(element: HTMLElement, fromLeft: boolean) {
     allPaths.forEach(path => path.setAttribute("d", d));
   }
 
-  return { entry, exit, paths, draw };
+  return { entry, exit, ink, draw, fraction: bridge?.fraction };
 }

@@ -5,6 +5,7 @@ import { Devices, Engineering, Folder, Paper, type StoryPalette } from "./StoryS
 import styles from "./ConnectedStory.module.css";
 import motion from "./StoryArt.module.css";
 import StorySculpture from "./StorySculpture";
+import TileBridgeFallback from "./TileBridgeFallback";
 
 function OperationPanel({ x, turn, kind, palette }: { x: number; turn: number; kind: "care" | "information" | "payment"; palette: StoryPalette }) {
   return (
@@ -33,14 +34,15 @@ function Practice({ x, y, palette }: { x: number; y: number; palette: StoryPalet
   );
 }
 
-function SceneThread() {
+function SceneThread({ bridge }: { bridge: boolean }) {
   return (
     <svg className={motion.plateThread} data-plate-layer="over" fill="none"
       preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      {bridge && <defs>{Array.from({ length: 6 }, (_, i) => <path key={i} data-bridge-leg="" />)}</defs>}
       <path data-plate-edging="" stroke="var(--paper)" strokeWidth="4" strokeOpacity=".85"
         vectorEffect="non-scaling-stroke" strokeLinecap="round" />
       <path className="story-thread-base" data-plate-base="" pathLength={1} />
-      <path className="story-thread-drawn" data-plate-drawn="" pathLength={1} />
+      <path className="story-thread-drawn" data-plate-drawn="" />
     </svg>
   );
 }
@@ -55,7 +57,7 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
   };
 
   return (
-    <div className={`story-art ${motion.scene}`} data-story-art data-scene={chapter} data-sculpture-ready={sculptureReady} aria-hidden="true">
+    <div id={chapter === "building" ? "bridge" : undefined} className={`story-art ${motion.scene}`} data-story-art data-scene={chapter} data-sculpture-ready={sculptureReady} aria-hidden="true">
       <div className={motion.plate}>
         <div className={motion.drawing} data-plate-drawing>
           <StorySculpture chapter={chapter} onReady={setSculptureReady} />
@@ -91,6 +93,7 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
                   <g className={motion.care} data-motion-part="care"><Paper x={-145} y={-42} turn={-8} tinted palette={palette} /></g>
                   <g className={motion.engineering} data-motion-part="engineering"><Engineering x={140} y={-42} palette={palette} /></g>
                   <g className={motion.product} data-motion-part="product"><Devices x={-8} y={82} palette={palette} /></g>
+                  <TileBridgeFallback />
                 </>
               ) : (
                 <>
@@ -118,7 +121,7 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
               : <><span>Implementation</span><span>Practice teams</span></>}
         </div>
       </div>
-      <SceneThread />
+      <SceneThread bridge={chapter === "building"} />
     </div>
   );
 }

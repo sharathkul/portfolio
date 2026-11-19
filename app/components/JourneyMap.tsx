@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import ThreadOrb from "./ThreadOrb";
 import styles from "./JourneyMap.module.css";
 
 type Props = { reducedMotion?: boolean };
@@ -23,8 +24,8 @@ const stops: Stop[] = [
 ];
 
 const paths = {
-  desktop: "M70 200C125 184 170 310 235 280S338 149 398 190S493 315 555 270S652 139 710 180S814 111 870 92",
-  mobile: "M82 35C82 73 235 61 235 105S82 132 82 175S235 201 235 245S82 270 82 315S175 346 175 385",
+  desktop: "M70 198C125 184 170 310 235 280S338 149 398 190S493 315 555 270S652 139 710 180S814 111 870 90",
+  mobile: "M82 33C82 73 235 61 235 105S82 132 82 175S235 201 235 245S82 270 82 315S175 346 175 383",
 };
 
 const scopes = [
@@ -68,8 +69,8 @@ function Platform({ point, selected = false, port }: { point: Point; selected?: 
 function Drawing({ mobile, selected, id }: { mobile: boolean; selected: number; id: string }) {
   const route = mobile ? paths.mobile : paths.desktop;
   const branch = mobile
-    ? ["M175 396v26Q175 443 55 470", "M175 396v74", "M175 396v26Q175 443 295 470"]
-    : ["M870 103v69Q870 199 765 251", "M870 103v79Q870 220 905 269", "M870 103v69Q870 199 1030 245"];
+    ? ["M175 383V422Q175 443 55 468", "M175 383V468", "M175 383V422Q175 443 295 468"]
+    : ["M870 90V172Q870 199 765 249", "M870 90V182Q870 220 905 267", "M870 90V172Q870 199 1030 243"];
   return (
     <svg
       viewBox={mobile ? "0 0 350 550" : "0 0 1100 390"}
@@ -93,8 +94,9 @@ function Drawing({ mobile, selected, id }: { mobile: boolean; selected: number; 
       </g>
       {stops.map((stop, index) => <Platform key={stop.label} point={mobile ? stop.mobile : stop.desktop} selected={selected === index} port={index === 0 ? "entry" : undefined} />)}
       {scopes.map((scope) => <Platform key={scope.title} point={mobile ? scope.mobile : scope.desktop} port={scope.title === "Delivery" ? "exit" : undefined} />)}
-      <path className={styles.thread} d={route} pathLength="1" />
-      {branch.map((d, index) => <path key={index} className={styles.branchThread} d={d} pathLength="1" />)}
+      <path className={styles.thread} data-journey-route="" d={route} pathLength="1" />
+      {branch.map((d, index) => <path key={index} className={styles.branchThread} data-journey-branch={scopes[index].title} d={d} pathLength="1" />)}
+      <ThreadOrb />
     </svg>
   );
 }
@@ -110,30 +112,80 @@ function labelPosition(desktop: Point, mobile: Point): CSSProperties {
 
 export default function JourneyMap({ reducedMotion = true }: Props) {
   const [selected, setSelected] = useState(5);
-  const [traced, setTraced] = useState(false);
   const host = useRef<HTMLDivElement>(null);
   const id = useId().replace(/:/g, "");
   const detailId = `${id}-journey-detail`;
 
   useEffect(() => {
     const element = host.current;
-    if (!element || reducedMotion || traced) return;
-    if (!("IntersectionObserver" in window)) {
-      setTraced(true);
-      return;
-    }
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setTraced(true);
-        observer.disconnect();
+    if (!element) return;
+    const narrow = window.matchMedia("(max-width: 960px)");
+    const lengths = new WeakMap<SVGPathElement, number>();
+    const views = Array.from(element.querySelectorAll<SVGSVGElement>("[data-journey-drawing]")).map(svg => ({
+      svg,
+      mobile: svg.dataset.journeyDrawing === "mobile",
+      route: svg.querySelector<SVGPathElement>("[data-journey-route]")!,
+      delivery: svg.querySelector<SVGPathElement>("[data-journey-branch='Delivery']")!,
+      orb: svg.querySelector<SVGGElement>("[data-thread-orb]")!,
+      glint: svg.querySelector<SVGGElement>("[data-orb-glint]")!,
+      scale: 1,
+    }));
+
+    const measure = () => {
+      for (const view of views) {
+        if (view.mobile === narrow.matches) {
+          const width = view.svg.getBoundingClientRect().width;
+          if (width > 0) view.scale = view.svg.viewBox.baseVal.width / width;
+        }
       }
-    }, { threshold: 0.25 });
+    };
+    const getLength = (path: SVGPathElement) => {
+      let length = lengths.get(path);
+      if (length === undefined) {
+        length = path.getTotalLength();
+        lengths.set(path, length);
+      }
+      return length;
+    };
+    const paint = (progress: number, paused: boolean) => {
+      const total = paused ? 1 : Math.max(0, Math.min(1, progress));
+      const route = Math.min(1, total / .72);
+      const branches = Math.max(0, (total - .72) / .28);
+      element.style.setProperty("--route-remaining", String(1 - route));
+      element.style.setProperty("--branch-remaining", String(1 - branches));
+      for (const view of views) {
+        if (paused || total <= 0 || total >= 1 || narrow.matches !== view.mobile) {
+          view.orb.setAttribute("visibility", "hidden");
+          continue;
+        }
+        const path = total < .72 ? view.route : view.delivery;
+        const amount = total < .72 ? route : branches;
+        const distance = getLength(path) * amount;
+        const point = path.getPointAtLength(distance);
+        const traveled = (path === view.delivery ? getLength(view.route) : 0) + distance;
+        view.orb.setAttribute("transform", `translate(${point.x} ${point.y}) scale(${view.scale})`);
+        view.glint.setAttribute("transform", `rotate(${traveled / view.scale * 2})`);
+        view.orb.setAttribute("visibility", "visible");
+      }
+    };
+    const restore = () => paint(Number(element.dataset.threadMapProgress ?? 0), element.dataset.threadMapReduced === "true" || reducedMotion);
+    const onProgress = (event: Event) => {
+      const { progress, reducedMotion: paused } = (event as CustomEvent<{ progress: number; reducedMotion: boolean }>).detail;
+      paint(progress, paused);
+    };
+    element.addEventListener("thread:map-progress", onProgress);
+    const observer = new ResizeObserver(() => { measure(); restore(); });
     observer.observe(element);
-    return () => observer.disconnect();
-  }, [reducedMotion, traced]);
+    measure();
+    restore();
+    return () => {
+      element.removeEventListener("thread:map-progress", onProgress);
+      observer.disconnect();
+    };
+  }, [reducedMotion]);
 
   return (
-    <div ref={host} className={styles.map} data-journey-map data-traced={traced} data-reduced-motion={reducedMotion}>
+    <div ref={host} className={styles.map} data-journey-map data-reduced-motion={reducedMotion}>
       <div className={styles.drawing} role="group" aria-label="Background and experience. Select a stop to learn more.">
         <Drawing mobile={false} selected={selected} id={`${id}-desktop-shadow`} />
         <Drawing mobile selected={selected} id={`${id}-mobile-shadow`} />

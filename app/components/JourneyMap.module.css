@@ -61,32 +61,21 @@
 
 .routeGuide {
   fill: none;
-  stroke: var(--journey-thread);
-  stroke-width: 2.2;
-  opacity: .62;
+  stroke: var(--thread-guide, #abb5c3);
+  stroke-width: 1.5;
   stroke-linecap: round;
 }
 
 .thread,
 .branchThread {
-  stroke: var(--journey-thread);
-  stroke-width: 3.2;
+  stroke: var(--thread-ink, #24345a);
+  stroke-width: 2;
   stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  transition: stroke-dashoffset 1600ms cubic-bezier(0.22, 1, 0.36, 1);
+  stroke-dashoffset: var(--route-remaining, 1);
 }
 
 .branchThread {
-  stroke-width: 2;
-  opacity: 0.6;
-  transition-delay: 950ms;
-}
-
-.map[data-traced="true"] .thread,
-.map[data-traced="true"] .branchThread,
-.map[data-reduced-motion="true"] .thread,
-.map[data-reduced-motion="true"] .branchThread {
-  stroke-dashoffset: 0;
+  stroke-dashoffset: var(--branch-remaining, 1);
 }
 
 .platformShadow {
@@ -208,11 +197,6 @@
   text-underline-offset: 4px;
 }
 
-.map[data-reduced-motion="true"] .thread,
-.map[data-reduced-motion="true"] .branchThread {
-  transition: none;
-}
-
 @media (max-width: 960px) {
   .map {
     max-width: 350px;
@@ -277,13 +261,5 @@
     padding: 10px 0;
     font-size: 16px;
     line-height: 1.5;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .thread,
-  .branchThread {
-    stroke-dashoffset: 0;
-    transition: none;
   }
 }

@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { measurePlate, type Projection, type Stroke } from "./plateThread";
+import { measurePlate, type Projection } from "./plateThread";
+import { inkTrack } from "./threadInk";
+import ThreadOrb from "./ThreadOrb";
 
 const outsideSegments = [0, 1, 2, 3, 4] as const;
 
 export default function StoryThread({ reducedMotion }: { reducedMotion: boolean }) {
   const svg = useRef<SVGSVGElement>(null);
+  const orbLayer = useRef<SVGSVGElement>(null);
   const paused = useRef(reducedMotion);
   const refresh = useRef<() => void>(() => {});
 
@@ -18,12 +21,20 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
   useEffect(() => {
     const host = svg.current;
     const story = host?.closest("main");
-    if (!host || !story) return;
+    const layer = orbLayer.current;
+    const orb = layer?.querySelector<SVGGElement>("[data-thread-orb]");
+    const map = story?.querySelector<HTMLElement>("[data-journey-map]");
+    if (!host || !story || !layer || !orb || !map) return;
     const art = Array.from(story.querySelectorAll<HTMLElement>("[data-story-art]"));
-    const segments = Array.from(host.querySelectorAll<SVGGElement>("g"));
+    const segments = Array.from(host.querySelectorAll<SVGGElement>("[data-thread-outside]"));
     const terminal = host.querySelector<SVGCircleElement>("[data-thread-terminal]");
     const plates = new Map<HTMLElement, ReturnType<typeof measurePlate>>();
-    let strokes: Stroke[] = [];
+    let strokes: ReturnType<typeof inkTrack>[] = [];
+    const bridge = art.find(element => element.dataset.scene === "building");
+    let bridgeStroke: ReturnType<typeof inkTrack> | undefined;
+    let mapStart = 0;
+    let mapEnd = 1;
+    let originY = 0;
     let frame = 0;
     let layoutFrame = 0;
     let viewportHeight = window.innerHeight;
@@ -32,14 +43,28 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
 
     function render() {
       frame = 0;
-      if (disposed || document.hidden) return;
-      const marker = window.scrollY + viewportHeight * .72 - storyTop;
-      for (const stroke of strokes) {
+      if (disposed || document.hidden || !strokes.length || !orb || !map) return;
+      const scroll = Math.max(0, window.scrollY - storyTop);
+      const focus = viewportHeight * .54;
+      const marker = scroll + focus + (originY - focus) * Math.max(0, 1 - scroll / (viewportHeight * .8));
+      let showOrb = false;
+      strokes.forEach((stroke, i) => {
         const amount = paused.current ? 1 : Math.max(0, Math.min(1, (marker - stroke.start) / Math.max(1, stroke.end - stroke.start)));
-        const offset = (1 - amount).toFixed(5);
-        stroke.paths.forEach(path => {
-          if (path.style.strokeDashoffset !== offset) path.style.strokeDashoffset = offset;
-        });
+        const active = !paused.current && (marker >= stroke.start || i === 0) && (marker < stroke.end || i === strokes.length - 1);
+        if (stroke === bridgeStroke && bridge && bridge.dataset.bridgeProgress !== String(amount)) {
+          bridge.dataset.bridgeProgress = String(amount);
+          bridge.dispatchEvent(new CustomEvent("thread:bridge-progress", { detail: amount }));
+        }
+        stroke.paint(amount, active ? orb : null);
+        if (active) showOrb = true;
+      });
+      orb.setAttribute("visibility", showOrb ? "visible" : "hidden");
+      const mapProgress = Math.max(0, Math.min(1, (marker - mapStart) / Math.max(1, mapEnd - mapStart)));
+      const progressText = mapProgress.toFixed(6);
+      if (map.dataset.threadMapProgress !== progressText || map.dataset.threadMapReduced !== String(paused.current)) {
+        map.dataset.threadMapProgress = progressText;
+        map.dataset.threadMapReduced = String(paused.current);
+        map.dispatchEvent(new CustomEvent("thread:map-progress", { detail: { progress: mapProgress, reducedMotion: paused.current } }));
       }
     }
     function request() {
@@ -64,6 +89,7 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
       const left = mobile ? 14 : Math.max(24, bounds.width * .035);
       const right = bounds.width - left;
       const first = { x: origin.left - bounds.left + origin.width / 2, y: origin.top - bounds.top + origin.height / 2 };
+      originY = first.y;
       const bend = mobile ? Math.min(first.y + 30, intro.top - bounds.top - 14) : Math.max(first.y + 36, portrait.bottom - bounds.top + 18);
       let rail = left;
       let previousBottom = 0;
@@ -79,7 +105,7 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
       function finishOutside(index: number, end: number) {
         const paths = segments[index].querySelectorAll("path");
         paths.forEach(path => path.setAttribute("d", d));
-        strokes.push({ paths: [paths[1]], start: startY, end });
+        strokes.push(inkTrack(paths[1], startY, end, 0, 0, true));
       }
       for (const [index, element] of art.entries()) {
         const rect = element.getBoundingClientRect();
@@ -93,19 +119,36 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
         const edge = x + plate.entry.x;
         const entryY = y + plate.entry.y;
         const exitY = y + plate.exit.y;
+        const middle = (entryY + exitY) / 2;
+        const handoff = Math.min(viewportHeight * .36, 270);
+        const start = element === bridge ? middle - handoff : entryY;
+        const end = element === bridge ? middle + handoff : exitY;
+        if (element === bridge) {
+          // Chapter navigation should bring the reader in before the first
+          // impact, even when the phone layout places the art above the title.
+          const chapter = element.closest("section")!;
+          const chapterTop = chapter.getBoundingClientRect().top - bounds.top;
+          const scrollAtApproach = start + (end - start) * .16 - viewportHeight * .54;
+          chapter.style.scrollMarginTop = `${Math.max(0, chapterTop - scrollAtApproach)}px`;
+        }
         const corner = Math.min(Math.abs(edge - rail) * .65, mobile ? 24 : 65);
         d += ` L${rail} ${entryY - corner} Q${rail} ${entryY} ${edge} ${entryY}`;
-        finishOutside(index, entryY);
-        strokes.push({ paths: plate.paths, start: entryY, end: exitY });
+        finishOutside(index, start);
+        const stroke = inkTrack(plate.ink, start, end, x, y, false, plate.fraction);
+        if (element === bridge) bridgeStroke = stroke;
+        strokes.push(stroke);
         d = `M${edge} ${exitY} Q${rail} ${exitY} ${rail} ${exitY + corner}`;
-        startY = exitY;
+        startY = end;
         previousBottom = element.closest("section")!.getBoundingClientRect().bottom - bounds.top;
       }
       switchRail(left);
       const mapEntryX = entry.left - bounds.left + entry.width / 2;
       const mapEntryY = entry.top - bounds.top + entry.height / 2;
       d += ` L${rail} ${mapEntryY - 28} Q${rail} ${mapEntryY} ${mapEntryX} ${mapEntryY}`;
-      finishOutside(3, mapEntryY);
+      const mapBox = drawing!.getBoundingClientRect();
+      mapStart = Math.max(startY + 1, mapBox.top - bounds.top + mapBox.height * .08);
+      mapEnd = Math.max(mapStart + 1, mapBox.bottom - bounds.top - mapBox.height * .09);
+      finishOutside(3, mapStart);
 
       // The map carries the line between its two pins. Pick it up at Delivery
       // and stay outside the form all the way down to the closing actions.
@@ -114,14 +157,15 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
       const endX = Math.min(right, contact.right - bounds.left + (mobile ? 6 : 16));
       const endY = contact.bottom - bounds.top - 22;
       const corner = Math.min(38, Math.max(0, right - endX));
-      startY = mapExitY;
+      startY = mapEnd;
       d = `M${mapExitX} ${mapExitY} Q${right} ${mapExitY} ${right} ${mapExitY + 32}`;
       d += ` V${endY - corner} Q${right} ${endY} ${right - corner} ${endY} H${endX}`;
-      const finalScrollMarker = document.documentElement.scrollHeight - viewportHeight * .28 - storyTop;
+      const finalScrollMarker = document.documentElement.scrollHeight - viewportHeight * .46 - storyTop;
       finishOutside(4, Math.min(endY, finalScrollMarker));
       terminal?.setAttribute("cx", String(endX));
       terminal?.setAttribute("cy", String(endY));
       host.setAttribute("viewBox", `0 0 ${bounds.width} ${bounds.height}`);
+      layer.setAttribute("viewBox", `0 0 ${bounds.width} ${bounds.height}`);
       host.style.opacity = "1";
       render();
     };
@@ -130,11 +174,21 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
     };
     const projection = (event: Event) => {
       plates.get(event.target as HTMLElement)?.draw((event as CustomEvent<Projection>).detail);
+      request();
     };
     const fallback = (event: Event) => {
       const element = event.target as HTMLElement;
-      if (!element.dataset.threadProjection) plates.get(element)?.draw(null);
+      if (!element.dataset.threadProjection) {
+        plates.get(element)?.draw(null);
+        request();
+      }
     };
+    const bridgeLayout = () => {
+      if (!bridge) return;
+      plates.get(bridge)?.draw(bridge.dataset.threadProjection ? JSON.parse(bridge.dataset.threadProjection) : null);
+      request();
+    };
+    bridge?.addEventListener("thread:bridge-layout", bridgeLayout);
     story.addEventListener("thread:projection", projection);
     art.forEach(element => element.addEventListener("scene:progress", fallback));
     const observer = new ResizeObserver(scheduleMeasure);
@@ -154,6 +208,7 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
       cancelAnimationFrame(layoutFrame);
       observer.disconnect();
       story.removeEventListener("thread:projection", projection);
+      bridge?.removeEventListener("thread:bridge-layout", bridgeLayout);
       art.forEach(element => element.removeEventListener("scene:progress", fallback));
       window.removeEventListener("resize", scheduleMeasure);
       window.removeEventListener("scroll", request);
@@ -162,12 +217,17 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
   }, []);
 
   return (
-    <svg ref={svg} className="story-thread" fill="none" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-      {outsideSegments.map(index => <g key={index} data-thread-outside={index}>
-        <path className="story-thread-base" pathLength={1} />
-        <path className="story-thread-drawn" pathLength={1} />
-      </g>)}
-      <circle data-thread-terminal r="3.5" stroke="var(--accent)" strokeWidth="1.5" fill="var(--paper)" />
-    </svg>
+    <>
+      <svg ref={svg} className="story-thread" fill="none" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        {outsideSegments.map(index => <g key={index} data-thread-outside={index}>
+          <path className="story-thread-base" />
+          <path className="story-thread-drawn" />
+        </g>)}
+        <circle data-thread-terminal r="3.5" stroke="var(--accent)" strokeWidth="1.5" fill="var(--paper)" />
+      </svg>
+      <svg ref={orbLayer} className="story-thread-orb-layer" fill="none" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <ThreadOrb />
+      </svg>
+    </>
   );
 }
