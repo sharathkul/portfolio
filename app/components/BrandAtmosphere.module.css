@@ -38,16 +38,21 @@
     rotateZ(calc(-12deg + var(--paper-register) * 11deg));
 }
 
+.spread::before {
+  content: "";
+  position: absolute;
+  inset: -15% -4%;
+  background: linear-gradient(112deg, transparent 27%, rgb(36 52 90 / 10%) 49.8%, rgb(255 255 255 / 63%) 50.3%, transparent 74%);
+  mask-image: radial-gradient(ellipse closest-side, black 18%, transparent 100%);
+  opacity: calc(1 - .85 * (var(--paper-split) + var(--paper-register)));
+}
+
 .leaf {
   --edge-shift: 0;
-  --stock: #f8f7f1;
   position: relative;
   flex: 0 0 33.333333%;
   height: 100%;
   transform-origin: 50% 50%;
-  background: linear-gradient(115deg, var(--stock), color-mix(in srgb, var(--stock) 96%, var(--accent)));
-  border: 1px solid rgb(36 52 90 / 10%);
-  box-shadow: 0 2px 0 #ffffff70, 0 7px 14px -11px rgb(28 40 68 / 32%);
   transform: translate3d(calc(var(--edge-shift) * var(--paper-split) * 14%), calc(var(--edge-shift) * var(--paper-split) * -13%), 0)
     rotateZ(calc(var(--edge-shift) * var(--paper-split) * 8deg))
     rotateY(calc(var(--edge-shift) * (1 - var(--paper-register)) * 17deg));
@@ -55,13 +60,11 @@
 
 .leaf:first-child {
   --edge-shift: -1;
-  --stock: #eaeae4;
   transform-origin: right center;
 }
 
 .leaf:last-child {
   --edge-shift: 1;
-  --stock: #eeede8;
   transform-origin: left center;
 }
 
@@ -76,7 +79,7 @@
   stroke-width: 1.35px;
   stroke-linecap: round;
   stroke-linejoin: round;
-  opacity: calc(.06 + var(--paper-split) * .25 + var(--paper-register) * .35);
+  opacity: calc(.06 + var(--paper-split) * .19 + var(--paper-register) * .23);
 }
 
 .startDot, .endpoints { fill: var(--paper); }
@@ -87,11 +90,7 @@
 }
 .endpoints { opacity: var(--paper-branches); }
 
-.atmosphere[data-finish="pressed"] .leaf {
-  background: transparent;
-  border-color: transparent;
-  box-shadow: none;
-}
+.atmosphere[data-finish="pressed"] .spread::before { display: none; }
 .atmosphere[data-finish="pressed"] .stage { opacity: calc(.6 - var(--paper-settle) * .26); }
 
 @media (max-width: 700px) {

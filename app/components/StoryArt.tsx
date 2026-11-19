@@ -33,23 +33,14 @@ function Practice({ x, y, palette }: { x: number; y: number; palette: StoryPalet
   );
 }
 
-function PlateThread({ layer }: { layer: "under" | "over" }) {
-  const clipId = `thread-surface-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+function SceneThread() {
   return (
-    <svg className={motion.plateThread} data-plate-layer={layer} fill="none"
+    <svg className={motion.plateThread} data-plate-layer="over" fill="none"
       preserveAspectRatio="none" aria-hidden="true" focusable="false">
-      {layer === "over" && (
-        <defs>
-          <clipPath id={clipId} clipPathUnits="userSpaceOnUse" fill="white">
-            <ellipse data-thread-surface="0" />
-            <ellipse data-thread-surface="1" />
-          </clipPath>
-        </defs>
-      )}
-      <g clipPath={layer === "over" ? `url(#${clipId})` : undefined}>
-        <path className="story-thread-base" data-plate-base={layer} pathLength={1} />
-        <path className="story-thread-drawn" data-plate-drawn={layer} pathLength={1} />
-      </g>
+      <path data-plate-edging="" stroke="var(--paper)" strokeWidth="4" strokeOpacity=".85"
+        vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+      <path className="story-thread-base" data-plate-base="" pathLength={1} />
+      <path className="story-thread-drawn" data-plate-drawn="" pathLength={1} />
     </svg>
   );
 }
@@ -127,8 +118,7 @@ export default function StoryArt({ chapter }: { chapter: "operations" | "buildin
               : <><span>Implementation</span><span>Practice teams</span></>}
         </div>
       </div>
-      <PlateThread layer="under" />
-      <PlateThread layer="over" />
+      <SceneThread />
     </div>
   );
 }

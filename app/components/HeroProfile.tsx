@@ -1,6 +1,8 @@
 import Image from "next/image";
 import styles from "./HeroProfile.module.css";
 
+const portraitCord = "M69 338 C62 341 65 349 54 353 C45 356 37 351 29 357 C23 361 23 366 14 370 L0 376";
+
 export default function HeroProfile({ reducedMotion }: { reducedMotion: boolean }) {
   return (
     <section className={styles.hero} id="start" aria-labelledby="intro-title">
@@ -26,7 +28,8 @@ export default function HeroProfile({ reducedMotion }: { reducedMotion: boolean 
             </svg>
             <svg className={styles.threadPass} viewBox="0 0 360 400" preserveAspectRatio="none" aria-hidden="true" focusable="false">
               <ellipse className={styles.eyelet} cx="69" cy="338" rx="4.1" ry="2.3" transform="rotate(-23 69 338)" />
-              <path className={styles.cord} d="M69 338 C62 341 65 349 54 353 C45 356 37 351 29 357 C23 361 23 366 14 370 L0 376" />
+              <path className={styles.cordEdge} d={portraitCord} />
+              <path className={styles.cord} d={portraitCord} />
               <path className={styles.glint} d="M67 340 C62 344 62 350 54 352 C50 354 47 353 43 353" />
             </svg>
           </div>

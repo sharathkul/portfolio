@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { measurePlate, type Projection, type Stroke } from "./plateThread";
 
-const outsideSegments = [0, 1, 2, 3] as const;
+const outsideSegments = [0, 1, 2, 3, 4] as const;
 
 export default function StoryThread({ reducedMotion }: { reducedMotion: boolean }) {
   const svg = useRef<SVGSVGElement>(null);
@@ -21,6 +21,7 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
     if (!host || !story) return;
     const art = Array.from(story.querySelectorAll<HTMLElement>("[data-story-art]"));
     const segments = Array.from(host.querySelectorAll<SVGGElement>("g"));
+    const terminal = host.querySelector<SVGCircleElement>("[data-thread-terminal]");
     const plates = new Map<HTMLElement, ReturnType<typeof measurePlate>>();
     let strokes: Stroke[] = [];
     let frame = 0;
@@ -52,11 +53,14 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
       const origin = story.querySelector("[data-connector-origin]")?.getBoundingClientRect();
       const intro = story.querySelector(".introduction-copy")?.getBoundingClientRect();
       const portrait = story.querySelector(".portrait-composition")?.getBoundingClientRect();
-      const map = story.querySelector("[data-journey-map] [role='group']")?.getBoundingClientRect();
-      if (!origin || !portrait || !intro || !map || art.length !== 3) return;
+      const mobile = bounds.width <= 960;
+      const drawing = story.querySelector(`[data-journey-drawing="${mobile ? "mobile" : "desktop"}"]`);
+      const entry = drawing?.querySelector("[data-thread-port='entry']")?.getBoundingClientRect();
+      const exit = drawing?.querySelector("[data-thread-port='exit']")?.getBoundingClientRect();
+      const contact = story.querySelector("#contact")?.getBoundingClientRect();
+      if (!origin || !portrait || !intro || !entry || !exit || !contact || art.length !== 3) return;
       storyTop = bounds.top + window.scrollY;
       viewportHeight = window.innerHeight;
-      const mobile = bounds.width <= 960;
       const left = mobile ? 14 : Math.max(24, bounds.width * .035);
       const right = bounds.width - left;
       const first = { x: origin.left - bounds.left + origin.width / 2, y: origin.top - bounds.top + origin.height / 2 };
@@ -98,10 +102,25 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
         previousBottom = element.closest("section")!.getBoundingClientRect().bottom - bounds.top;
       }
       switchRail(left);
-      const endX = map.left - bounds.left + map.width * (mobile ? 82 / 350 : 70 / 1100);
-      const endY = map.top - bounds.top + map.height * (mobile ? 35 / 550 : 200 / 390);
-      d += ` L${rail} ${endY - 28} Q${rail} ${endY} ${endX} ${endY}`;
-      finishOutside(3, endY);
+      const mapEntryX = entry.left - bounds.left + entry.width / 2;
+      const mapEntryY = entry.top - bounds.top + entry.height / 2;
+      d += ` L${rail} ${mapEntryY - 28} Q${rail} ${mapEntryY} ${mapEntryX} ${mapEntryY}`;
+      finishOutside(3, mapEntryY);
+
+      // The map carries the line between its two pins. Pick it up at Delivery
+      // and stay outside the form all the way down to the closing actions.
+      const mapExitX = exit.left - bounds.left + exit.width / 2;
+      const mapExitY = exit.top - bounds.top + exit.height / 2;
+      const endX = Math.min(right, contact.right - bounds.left + (mobile ? 6 : 16));
+      const endY = contact.bottom - bounds.top - 22;
+      const corner = Math.min(38, Math.max(0, right - endX));
+      startY = mapExitY;
+      d = `M${mapExitX} ${mapExitY} Q${right} ${mapExitY} ${right} ${mapExitY + 32}`;
+      d += ` V${endY - corner} Q${right} ${endY} ${right - corner} ${endY} H${endX}`;
+      const finalScrollMarker = document.documentElement.scrollHeight - viewportHeight * .28 - storyTop;
+      finishOutside(4, Math.min(endY, finalScrollMarker));
+      terminal?.setAttribute("cx", String(endX));
+      terminal?.setAttribute("cy", String(endY));
       host.setAttribute("viewBox", `0 0 ${bounds.width} ${bounds.height}`);
       host.style.opacity = "1";
       render();
@@ -120,7 +139,7 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
     art.forEach(element => element.addEventListener("scene:progress", fallback));
     const observer = new ResizeObserver(scheduleMeasure);
     observer.observe(story);
-    story.querySelectorAll("[data-story-art], [data-plate-drawing], .story-part, .portrait-composition, .introduction-copy, [data-journey-map]")
+    story.querySelectorAll("[data-story-art], [data-plate-drawing], .story-part, .portrait-composition, .introduction-copy, [data-journey-map], #contact")
       .forEach(element => observer.observe(element));
     window.addEventListener("resize", scheduleMeasure, { passive: true });
     window.addEventListener("scroll", request, { passive: true });
@@ -148,6 +167,7 @@ export default function StoryThread({ reducedMotion }: { reducedMotion: boolean 
         <path className="story-thread-base" pathLength={1} />
         <path className="story-thread-drawn" pathLength={1} />
       </g>)}
+      <circle data-thread-terminal r="3.5" stroke="var(--accent)" strokeWidth="1.5" fill="var(--paper)" />
     </svg>
   );
 }

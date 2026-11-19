@@ -97,11 +97,17 @@
   stroke-width: 1;
 }
 
+.cordEdge,
 .cord,
 .glint {
   fill: none;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
+}
+
+.cordEdge {
+  stroke: #f5f2e9;
+  stroke-width: 4.25px;
 }
 
 .cord {

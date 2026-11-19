@@ -59,6 +59,14 @@
   stroke-width: 9;
 }
 
+.routeGuide {
+  fill: none;
+  stroke: var(--journey-thread);
+  stroke-width: 2.2;
+  opacity: .62;
+  stroke-linecap: round;
+}
+
 .thread,
 .branchThread {
   stroke: var(--journey-thread);

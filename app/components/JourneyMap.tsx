@@ -50,17 +50,17 @@ function Detail({ selected }: { selected: number }) {
     case 4:
       return <>Reporting, analytics and healthcare operations at <Company href="https://www.thenephrologygroupinc.com/">The Nephrology Group</Company> since 2023.</>;
     default:
-      return <>Healthcare operations, product requirements and engineering now come together in the work at <Company href="https://ncaremd.com/">nCare</Company>.</>;
+      return null;
   }
 }
 
-function Platform({ point, selected = false }: { point: Point; selected?: boolean }) {
+function Platform({ point, selected = false, port }: { point: Point; selected?: boolean; port?: "entry" | "exit" }) {
   return (
     <g transform={`translate(${point.x} ${point.y})`} className={selected ? styles.selectedStop : undefined}>
       <path className={styles.platformShadow} d="m-31 3 31-14 31 14-31 15Z" transform="translate(0 9)" />
       <path className={styles.platformSide} d="m-31 0 31 14 31-14v9L0 23-31 9Z" />
       <path className={styles.platformTop} d="m-31 0 31-14 31 14L0 14Z" />
-      <circle className={styles.stopPin} cx="0" cy="-2" r="5" />
+      <circle className={styles.stopPin} cx="0" cy="-2" r="5" data-thread-port={port} />
     </g>
   );
 }
@@ -73,6 +73,7 @@ function Drawing({ mobile, selected, id }: { mobile: boolean; selected: number; 
   return (
     <svg
       viewBox={mobile ? "0 0 350 550" : "0 0 1100 390"}
+      data-journey-drawing={mobile ? "mobile" : "desktop"}
       className={mobile ? styles.mobileDrawing : styles.desktopDrawing}
       aria-hidden="true"
       fill="none"
@@ -86,8 +87,12 @@ function Drawing({ mobile, selected, id }: { mobile: boolean; selected: number; 
       <path className={styles.routeDepth} d={route} transform="translate(0 4)" />
       <path className={styles.routeSurface} d={route} />
       {branch.map((d, index) => <path key={index} className={styles.branchSurface} d={d} />)}
-      {stops.map((stop, index) => <Platform key={stop.label} point={mobile ? stop.mobile : stop.desktop} selected={selected === index} />)}
-      {scopes.map((scope) => <Platform key={scope.title} point={mobile ? scope.mobile : scope.desktop} />)}
+      <g className={styles.routeGuide}>
+        <path d={route} />
+        {branch.map((d, index) => <path key={index} d={d} />)}
+      </g>
+      {stops.map((stop, index) => <Platform key={stop.label} point={mobile ? stop.mobile : stop.desktop} selected={selected === index} port={index === 0 ? "entry" : undefined} />)}
+      {scopes.map((scope) => <Platform key={scope.title} point={mobile ? scope.mobile : scope.desktop} port={scope.title === "Delivery" ? "exit" : undefined} />)}
       <path className={styles.thread} d={route} pathLength="1" />
       {branch.map((d, index) => <path key={index} className={styles.branchThread} d={d} pathLength="1" />)}
     </svg>
@@ -159,13 +164,13 @@ export default function JourneyMap({ reducedMotion = true }: Props) {
           </div>
         ))}
       </div>
-      <div className={styles.detailArea}>
+      <div className={styles.detailArea} id={detailId} hidden={selected === stops.length - 1}>
         <div className={styles.detailSizer} aria-hidden="true" inert>
-          {stops.map((stop, index) => (
+          {stops.slice(0, -1).map((stop, index) => (
             <p key={stop.label} className={styles.detail}><Detail selected={index} /></p>
           ))}
         </div>
-        <p id={detailId} className={styles.detail} aria-live="polite">
+        <p className={styles.detail} aria-live="polite">
           <Detail selected={selected} />
         </p>
       </div>

@@ -18,9 +18,8 @@ export function measurePlate(element: HTMLElement, fromLeft: boolean) {
   const edge = fromLeft ? 0 : box.width;
   const entry = { x: edge, y: offset.y + height * .26 };
   const exit = { x: edge, y: offset.y + height * .88 };
-  const allPaths = element.querySelectorAll<SVGPathElement>("[data-plate-base], [data-plate-drawn]");
+  const allPaths = element.querySelectorAll<SVGPathElement>("[data-plate-edging], [data-plate-base], [data-plate-drawn]");
   const paths = Array.from(element.querySelectorAll<SVGPathElement>("[data-plate-drawn]"));
-  const patches = element.querySelectorAll<SVGEllipseElement>("[data-thread-surface]");
   const fallbackObjects = fallbackSelectors[element.dataset.scene!].map(selector => element.querySelector(selector)!);
   element.querySelectorAll("[data-plate-layer]").forEach(layer => layer.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`));
 
@@ -51,14 +50,6 @@ export function measurePlate(element: HTMLElement, fromLeft: boolean) {
       `C${turnX} ${exit.y + height * .03} ${edge + dir * width * .36} ${exit.y} ${edge} ${exit.y}`,
     ].join(" ");
     allPaths.forEach(path => path.setAttribute("d", d));
-    // Only a short stitch rides on top of the first two surfaces.
-    // Elsewhere the transparent canvas provides the objects' actual silhouettes.
-    patches.forEach((patch, i) => {
-      patch.setAttribute("cx", String(points[i].x));
-      patch.setAttribute("cy", String(points[i].y));
-      patch.setAttribute("rx", String(Math.min(15, width * .025)));
-      patch.setAttribute("ry", String(Math.min(8, height * .027)));
-    });
   }
 
   return { entry, exit, paths, draw };

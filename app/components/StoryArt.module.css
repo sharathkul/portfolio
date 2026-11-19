@@ -12,12 +12,10 @@
   --handoff-progress: clamp(0, calc((var(--scene-progress, 1) - .28) / .6), 1);
 }
 
-/* Each chapter is a moving print, mounted on the same stock as the portrait. */
 :global(.story-part) .scene[data-scene] {
   --plate-width: 620px;
   --plate-ratio: 1.55;
-  --mat: clamp(9px, 1.15vw, 17px);
-  --rim: color-mix(in srgb, var(--accent) 24%, var(--paper));
+  --scene-inset: clamp(9px, 1.15vw, 17px);
   width: min(100%, var(--plate-width));
   height: auto;
   aspect-ratio: var(--plate-ratio);
@@ -37,47 +35,29 @@
 
 .plate {
   position: absolute;
-  inset: 0;
+  inset: 1px;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
-  padding: var(--mat);
-  padding-bottom: 0;
-  border: 1px solid var(--rim);
-  background: color-mix(in srgb, var(--paper) 39%, white);
-  box-shadow: 0 2px 5px rgb(28 40 68 / 8%);
+  padding: var(--scene-inset) var(--scene-inset) 0;
 }
-
-/* Offset the paperwork underneath the first plate, then register the next. */
-.scene[data-scene="operations"]::before,
-.scene[data-scene="operations"]::after {
-  content: "";
-  position: absolute;
-  inset: 0 2px;
-  z-index: -1;
-  border: 1px solid var(--rim);
-  background: var(--paper);
-}
-
-.scene[data-scene="operations"]::before { transform: translate(-2px, 3px) rotate(-1.1deg); }
-.scene[data-scene="operations"]::after { transform: translate(2px, 2px) rotate(.7deg); }
 
 .drawing {
   position: relative;
   min-height: 0;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--accent) 13%, var(--paper));
-  background: #f3f1ea;
 }
 
 .scene[data-scene="building"] .drawing::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 20% 9% 5%;
   background-image:
-    linear-gradient(to right, rgb(36 52 90 / 10%) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(36 52 90 / 10%) 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: linear-gradient(135deg, #000, transparent 84%);
+    linear-gradient(to right, rgb(36 52 90 / 18%) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(36 52 90 / 18%) 1px, transparent 1px);
+  background-size: clamp(15px, 1.9vw, 23px) clamp(15px, 1.9vw, 23px);
+  mask-image: radial-gradient(ellipse closest-side, #000 24%, transparent 100%);
+  transform: perspective(500px) rotateX(45deg) rotateZ(-12deg);
+  pointer-events: none;
 }
 
 .scene > .plateThread {
@@ -90,8 +70,6 @@
   pointer-events: none;
 }
 
-/* The mount and grid paint first. The sculpture sits between both thread passes. */
-.plateThread[data-plate-layer="under"] { z-index: 1; }
 .plateThread[data-plate-layer="over"] { z-index: 3; }
 .drawing > svg, .sculpture { z-index: 2; }
 
